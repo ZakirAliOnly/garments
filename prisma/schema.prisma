@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AccountHeader {
+  id        String     @id @default(cuid())
+  name      String
+  prefix    String     @unique
+  createdAt DateTime   @default(now())
+  customers Customer[]
+  invoices  Invoice[]
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  cid       String         @unique
+  name      String
+  phone     String
+  address   String?
+  whatsapp  String?
+  reference String?
+  notes     String?
+  balance   Float          @default(0) // positive = DR (owes shop), negative = CR (advance paid)
+  taxIdType String? // Government only: "Sales Tax Number" | "GST Number" | "BRA" | "NTN"
+  taxIdNumber String?
+  headerId  String?
+  header    AccountHeader? @relation(fields: [headerId], references: [id])
+  invoices      Invoice[]
+  refunds       RefundRequest[]
+  cashEntries   CashBookEntry[]
+  measurements  Measurement[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model StockItem {
+  id                String         @id @default(cuid())
+  code              String         @unique
+  sku               String?        @unique // barcode-ready: e.g. BUI-X7K2A
+  name              String
+  category          String
+  quantity          Float
+  unit              String
+  purchasePrice     Float          @default(0)
+  salesPrice        Float          @default(0)
+  lowStockThreshold Float          @default(5)
+  hasVariants       Boolean        @default(false)
+  variants          StockVariant[]
+  batches           StockBatch[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model StockBatch {
+  id          String    @id @default(cuid())
+  batchNumber String    @unique // e.g. BATCH-0001
+  purchaseId  String    @unique  // one batch per purchase
+  stockItemId String
+  stockItem   StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+  qty         Float     // original quantity purchased
+  remaining   Float     // remaining available quantity (decremented on sale)
+  costPrice   Float     // unit cost at time of purchase
+  purchasedAt DateTime  // date of purchase (for FIFO ordering)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model StockVariant {
+  id            String    @id @default(cuid())
+  sku           String    @unique
+  size          String?
+  color         String?
+  quantity      Float     @default(0)
+  purchasePrice Float?    // per-variant cost; null = use parent item price
+  salesPrice    Float?    // per-variant selling price; null = use parent item price
+  stockItemId   String
+  stockItem     StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  invNumber   String        @unique // e.g. INV-0001
+  type        String        // "regular" | "walk"
+  // Customer fields
+  customerId  String?       // for regular customers (FK to Customer)
+  customer    Customer?     @relation(fields: [customerId], references: [id])
+  customerName String       // display name (walk-in or customer name)
+  phone       String?
+  address     String?
+  // Account Head (for categorisation / ledger grouping)
+  accountHeaderId String?
+  accountHeader   AccountHeader? @relation(fields: [accountHeaderId], references: [id])
+  // Dates
+  invoiceDate DateTime
+  deliveryDate DateTime?
+  // Order
+  description String?
+  // Items (stored as JSON)
+  items       Json          // [{dt, q, r, a}]
+  // Totals
+  subtotal    Float
+  discount    Float         @default(0)
+  total       Float
+  amountPaid  Float         @default(0)
+  balanceDue  Float
+  // Payment
+  paymentMethod String?     @default("Cash")    // "Cash" | "Bank" | "Mobile Wallet"
+  // Status
+  status      String        @default("pending") // "pending" | "partial" | "paid"
+  isRefunded  Boolean       @default(false)
+  refunds     RefundRequest[]
+  cashEntries CashBookEntry[]
+  workerTasks WorkerTask[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model RefundRequest {
+  id           String    @id @default(cuid())
+  rrNumber     String    @unique // e.g. RR-0001
+  invoiceId    String
+  invoice      Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceNumber String
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName String
+  type         String    // "refund" | "replace"
+  reason       String?
+  amount       Float     @default(0)
+  items        Json      // [{dt, q, r, a, stockId?, variantId?}]
+  createdAt    DateTime  @default(now())
+}
+
+model MeasurementCategory {
+  id           String        @id @default(cuid())
+  name         String        // e.g. "Shirt", "Gown — Justice"
+  group        String?       // parent group e.g. "Gowns", "Medical Scrubs"
+  fields       Json          // ["Chest","Shoulder","Sleeve Length", ...]
+  unit         String        @default("inches") // "inches" | "cm"
+  sortOrder    Int           @default(0)
+  active       Boolean       @default(true)
+  measurements Measurement[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Measurement {
+  id           String              @id @default(cuid())
+  customerId   String
+  customer     Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     MeasurementCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  values       Json                // { "Chest": "42", "Shoulder": "18", ... }
+  notes        String?
+  measuredAt   DateTime            @default(now())
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@unique([customerId, categoryId])
+}
+
+model Supplier {
+  id             String     @id @default(cuid())
+  supplierId     String     @unique
+  name           String
+  phone          String?
+  city           String?
+  category       String?
+  notes          String?
+  totalPurchased Float      @default(0)
+  balanceDue     Float      @default(0)
+  purchases      Purchase[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Purchase {
+  id              String   @id @default(cuid())
+  poNumber        String   @unique
+  supplierId      String
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
+  stockItemId     String?
+  stockName       String
+  stockCode       String?
+  qty             Float
+  unitPrice       Float
+  total           Float
+  remaining       Float?
+  transactionType String   // "sold" | "return" | "exchange"
+  dateTime        DateTime
+  amountPaid      Float    @default(0)
+  balanceDue      Float    @default(0)
+  status          String   @default("pending") // "pending" | "partial" | "paid"
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Worker {
+  id         String       @id @default(cuid())
+  workerId   String       @unique // e.g. WRK-001
+  name       String
+  role       String       // "Master Cutter" | "Senior Tailor" | "Junior Tailor" | "Finishing Expert" | "Embroidery" | "Ironing / Pressing"
+  phone      String?
+  cnic       String?
+  salaryType String       @default("per_piece") // "per_piece" | "monthly" | "daily"
+  rate       Float        @default(0)
+  joinDate   DateTime?
+  status     String       @default("active") // "active" | "leave" | "inactive"
+  notes      String?
+  tasks      WorkerTask[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model WorkerTask {
+  id              String    @id @default(cuid())
+  taskId          String    @unique // e.g. TK-001
+  workerId        String
+  worker          Worker    @relation(fields: [workerId], references: [id])
+  invoiceId       String
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id])
+  invoiceNumber   String    // denormalised for display
+  customerName    String    // denormalised for display
+  itemDescription String    // e.g. "Qameez x2"
+  stage           String    // "cutting" | "stitching" | "finishing" | "pressing" | "ready"
+  dueDate         DateTime?
+  pieceRate       Float     @default(0)
+  priority        String    @default("normal") // "normal" | "urgent" | "rush"
+  status          String    @default("in_progress") // "in_progress" | "completed"
+  notes           String?
+  assignedAt      DateTime  @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model CashBookEntry {
+  id          String    @id @default(cuid())
+  entryDate   DateTime
+  type        String    // "credit" | "debit"
+  description String
+  amount      Float
+  notes       String?
+  // Optional links
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  invoiceId   String?
+  invoice     Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

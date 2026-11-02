@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(grep -rn \"adapter\" app/generated/prisma/*.d.ts)",
+      "Bash(npm run:*)",
+      "Bash(grep -n '\"\"customers\"\"' components/pages/DashboardPage.tsx)",
+      "Bash(curl -s http://localhost:3000/api/account-headers)",
+      "Bash(curl -s http://localhost:3000/api/customers)",
+      "Read(//c/Users/junayd/AppData/Local/Temp/**)",
+      "Bash(node -e \"const { PrismaClient } = require\\(''''@prisma/client''''\\); const p = new PrismaClient\\(\\); p.accountHeader.findMany\\(\\).then\\(r => { console.log\\(''''DB OK'''', r.length\\); p.$disconnect\\(\\); }\\).catch\\(e => { console.error\\(''''DB ERR'''', e.message\\); p.$disconnect\\(\\); }\\);\")",
+      "Bash(cmd /c \"rmdir /s /q .next\")",
+      "Bash(npx vercel:*)",
+      "Bash(xargs wc:*)",
+      "Bash(find 'C:\\\\Users\\\\junayd\\\\Desktop\\\\Projects\\\\TMS 2.0\\\\components' -type f -name *.tsx -o -name *.ts)",
+      "Bash(find 'C:\\\\Users\\\\junayd\\\\Desktop\\\\Projects\\\\TMS 2.0\\\\app\\\\api' -type f -name *.ts)",
+      "Read(//c/Users/junayd/.claude/projects/c--Users-junayd-Desktop-Projects-TMS-2-0/tool-results/**)",
+      "Bash(npx next:*)",
+      "Bash(grep -r process.env /home/junayd/Projects/TMS-2.0/app --include=*.ts --include=*.tsx)",
+      "Bash(grep -r process.env /home/junayd/Projects/TMS-2.0 --include=*.ts --include=*.tsx --include=*.js --include=*.mjs)",
+      "Bash(find /home/junayd/Projects/TMS-2.0/prisma -type f ! -path */node_modules/*)",
+      "Bash(grep -r NEXT_PUBLIC /home/junayd/Projects/TMS-2.0 --include=*.ts --include=*.tsx --include=*.js --include=*.mjs)",
+      "Bash(grep -r \"DATABASE_URL\\\\|DIRECT_URL\" /home/junayd/Projects/TMS-2.0 --include=*.ts --include=*.tsx --include=*.prisma --include=*.json)",
+      "Bash(grep -r \"NODE_ENV\\\\|process\\\\.env\" /home/junayd/Projects/TMS-2.0 --include=*.ts --include=*.tsx --include=*.js --include=*.mjs)",
+      "Bash(npx prisma:*)",
+      "Bash(wc -l \"/home/junayd/Projects/TMS-2.0/chishty-sons-tms-v4 \\(1\\).html\")",
+      "Read(//home/junayd/**)",
+      "Bash(grep -rn export.*revalidateTag /home/junayd/Projects/TMS-2.0/node_modules/next/cache.d.ts)",
+      "Bash(ls -la /home/junayd/Projects/TMS-2.0/app/api/measurements/[id]/)",
+      "Bash(ls /home/junayd/Projects/TMS-2.0/app/api/suppliers/[id]/)",
+      "Bash(ls /home/junayd/Projects/TMS-2.0/app/api/purchases/[id]/)",
+      "Bash(ls /home/junayd/Projects/TMS-2.0/*.config*)",
+      "Bash(mkdir -p /home/junayd/Projects/TMS-2.0/app/api/workers/[id])",
+      "Bash(mkdir -p /home/junayd/Projects/TMS-2.0/app/api/worker-tasks/[id])",
+      "Bash(node -e \":*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(head -5 \"/home/junayd/Projects/TMS-2.0/chishty-sons-tms-v4 \\(1\\).html\")",
+      "Bash(grep -rn \"@media.*print\\\\|@page\\\\|paper.*size\" /home/junayd/Projects/TMS-2.0/app /home/junayd/Projects/TMS-2.0/components --include=*.tsx --include=*.ts --include=*.css)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\junayd\\Desktop\\Projects\\TMS\\app\\api\\account-headers",
+      "C:\\Users\\junayd\\Desktop\\Projects\\TMS 2.0\\app\\api\\cashbook",
+      "/home/junayd/Projects/TMS-2.0/app/api/measurement-categories",
+      "/home/junayd/Projects/TMS-2.0/app/api/account-headers/[id]"
+    ]
+  }
+}

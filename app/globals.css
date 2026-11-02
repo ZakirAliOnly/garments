@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* Force light mode — override Tailwind dark mode inheritance */
+:root, html {
+  color-scheme: light;
+  background-color: #f0f4fb;
+  color: #0a1628;
+}
+
+:root {
+  --ink: #0a1628;
+  --ink2: #0d2040;
+  --ink3: #0e3460;
+  --blue: #1057a0;
+  --blue2: #1a6fcc;
+  --blue3: #2e8fe0;
+  --blue4: #5aabf0;
+  --blue5: #e0f0ff;
+  --gold: #f0a500;
+  --gold2: #ffc940;
+  --white: #fff;
+  --bg: #f0f4fb;
+  --bg2: #e8eef7;
+  --bg3: #cdd8ec;
+  --muted: #7a8baa;
+  --red: #e03c3c;
+  --green: #22a86e;
+  --sw: 248px;
+  --hh: 64px;
+  --r: 12px;
+  --r2: 8px;
+  --sh: 0 2px 16px rgba(10,22,40,.08);
+  --shm: 0 8px 40px rgba(10,22,40,.16);
+  --tr: .22s cubic-bezier(.4,0,.2,1);
+}
+
+/* Disable number input spinners and scroll/arrow-key stepping */
+input[type=number] { -moz-appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--blue3); }
+
+@keyframes pgIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(.8); } }
+@keyframes drift { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(20px,-30px) scale(1.08); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+.skl {
+  background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ── Mobile Sidebar ────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,22,40,.55);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sw: 0px;
+  }
+
+  aside.app-sidebar {
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  aside.app-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  .menu-toggle-btn {
+    display: flex !important;
+  }
+
+  /* Responsive grids */
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .dash-sales {
+    grid-template-columns: 1fr !important;
+  }
+  .dash-main {
+    grid-template-columns: 1fr !important;
+  }
+  .inv-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-stats {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Hide hamburger on desktop */
+.menu-toggle-btn {
+  display: none;
+}
