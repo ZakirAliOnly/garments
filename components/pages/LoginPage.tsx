@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth/client";
 
 interface LoginPageProps {
-  /** Called when Neon authentication succeeds. */
+  /** Called when login succeeds. */
   onLogin: () => void;
 }
 
@@ -44,8 +44,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true);
     setError("");
 
-    const { error: authError } = await authClient.signIn.email({ email, password, rememberMe })
-      .catch(() => ({ error: { message: "Unable to reach the login service. Please try again." } }));
+    const { error: authError } = await authClient.signIn(email, password, rememberMe);
 
     if (authError) {
       setError("Incorrect email or password.");
@@ -55,7 +54,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       return;
     }
 
-    // Remember the email only; session cookies are managed by Neon Auth.
+    // Remember the email only; the session is an httpOnly cookie.
     try {
       if (rememberMe) {
         localStorage.setItem("sk_login_remember", "1");
