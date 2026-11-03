@@ -84,13 +84,9 @@ export default function SettingsPage() {
 
     setSaving(true);
     try {
-      const { error: updateErr } = await authClient.changePassword({
-        currentPassword: currentPw,
-        newPassword: newPw,
-        revokeOtherSessions: true,
-      });
+      const { error: updateErr } = await authClient.changePassword(currentPw, newPw);
       if (updateErr) {
-        showToast(updateErr.message || "Failed to update password", false);
+        showToast(updateErr || "Failed to update password", false);
         setSaving(false);
         return;
       }

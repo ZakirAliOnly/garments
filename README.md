@@ -1,13 +1,13 @@
 # Garments — Tailor Management System
 
-A full-stack TMS built with Next.js, Prisma, and Neon PostgreSQL and Neon Auth.
+A full-stack TMS built with Next.js, Prisma, and Neon PostgreSQL.
 
 ## Stack
 
 - **Frontend**: Next.js 16 (App Router), Tailwind CSS v4, Font Awesome 6
 - **Backend**: Next.js API Routes
 - **ORM**: Prisma 7 with `@prisma/adapter-pg`
-- **Database**: Neon PostgreSQL and Neon Auth
+- **Database**: Neon PostgreSQL
 
 ## Features
 

@@ -21,10 +21,9 @@ export default function Home() {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const { data: session, isPending } = authClient.useSession();
   useEffect(() => {
-    if (!isPending) setIsLoggedIn(!!session?.user);
-  }, [session, isPending]);
+    authClient.getSession().then(setIsLoggedIn);
+  }, []);
 
   // Still checking — show nothing to avoid login flash
   if (isLoggedIn === null) return null;
@@ -38,7 +37,7 @@ export default function Home() {
       <Sidebar
         activePage={activePage}
         setActivePage={(p) => { setActivePage(p); setSidebarOpen(false); }}
-        onLogout={() => authClient.signOut()}
+        onLogout={async () => { await authClient.signOut(); setIsLoggedIn(false); }}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
