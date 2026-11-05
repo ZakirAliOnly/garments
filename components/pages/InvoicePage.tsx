@@ -30,7 +30,7 @@ interface StockVariantRow {
 }
 
 interface StockRow {
-  id: string; name: string; salesPrice: number; unit: string;
+  id: string; name: string; code?: string; sku?: string; salesPrice: number; unit: string;
   hasVariants: boolean; variants: StockVariantRow[];
 }
 
@@ -519,7 +519,7 @@ function SearchDropdown<T>({ options, value, placeholder, renderOption, renderVa
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {value ? renderValue(value) : placeholder}
         </span>
-        <i className={`fa-solid fa-chevron-${open ? "up" : "down"}`} style={{ fontSize: 10, color: "var(--muted)", flexShrink: 0, marginLeft: 6 }}></i>
+        <i aria-hidden="true" className={`fa-solid fa-chevron-${open ? "up" : "down"}`} style={{ fontSize: 10, color: "var(--muted)", flexShrink: 0, marginLeft: 6 }}></i>
       </div>
 
       {open && (
@@ -530,7 +530,7 @@ function SearchDropdown<T>({ options, value, placeholder, renderOption, renderVa
         }}>
           {/* Search input */}
           <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--bg2)", position: "relative" }}>
-            <i className="fa-solid fa-magnifying-glass" style={{ position: "absolute", left: 20, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontSize: 11, pointerEvents: "none" }}></i>
+            <i aria-hidden="true" className="fa-solid fa-magnifying-glass" style={{ position: "absolute", left: 20, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", fontSize: 11, pointerEvents: "none" }}></i>
             <input
               autoFocus
               type="text"
@@ -573,7 +573,7 @@ function SearchDropdown<T>({ options, value, placeholder, renderOption, renderVa
 /* ═══════════════════════════════════════════════════════
    MAIN PAGE
 ═══════════════════════════════════════════════════════ */
-export default function InvoicePage() {
+export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string }) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [stockItems, setStockItems] = useState<StockRow[]>([]);
@@ -621,6 +621,35 @@ export default function InvoicePage() {
   /* tabs */
   const [activeTab, setActiveTab] = useState<"invoice" | "list" | "report">("invoice");
 
+  useEffect(() => { if (searchQuery.trim()) { setActiveTab("list"); setPage(1); } }, [searchQuery]);
+  const visibleInvoices = invoices.filter(inv => `${inv.invNumber} ${inv.customerName} ${inv.phone ?? ""}`.toLowerCase().includes(searchQuery.trim().toLowerCase()));
+  const [productQuery, setProductQuery] = useState("");
+  const [productSearchOpen, setProductSearchOpen] = useState(false);
+  const barcodeRef = useRef<HTMLInputElement>(null);
+  const [draftAvailable, setDraftAvailable] = useState(false);
+  useEffect(() => { setDraftAvailable(!!localStorage.getItem("garments.invoice-draft.v1")); }, []);
+  const saveDraft = () => {
+    try { localStorage.setItem("garments.invoice-draft.v1", JSON.stringify({ walkName, walkPhone, invDate, desc, items, discount, paymentMethod })); setDraftAvailable(true); showToast("Draft saved on this device"); }
+    catch { showToast("Unable to save draft on this device"); }
+  };
+  const restoreDraft = () => {
+    try { const d = JSON.parse(localStorage.getItem("garments.invoice-draft.v1") ?? "null"); if (!d || !Array.isArray(d.items)) throw Error();
+      setWalkName(d.walkName ?? ""); setWalkPhone(d.walkPhone ?? ""); setInvDate(d.invDate ?? today()); setDesc(d.desc ?? ""); setItems(d.items); setDiscount(d.discount ?? 0); setPaymentMethod(d.paymentMethod ?? "Cash"); showToast("Draft restored");
+    } catch { showToast("Unable to restore draft"); }
+  };
+  const addStockProduct = (stock: StockRow, variant?: StockVariantRow) => {
+    const rate = variant?.salesPrice ?? (stock.hasVariants && !variant ? 0 : stock.salesPrice);
+    const label = stock.name + (variant ? ` (${[variant.size, variant.color].filter(Boolean).join(" / ")})` : "");
+    setItems(prev => { const index = prev.findIndex(i => !i.dt.trim()); const item: InvItem = { dt: label, q: 1, r: rate, a: rate, stockId: stock.id, variantId: variant?.id }; return index < 0 ? [...prev, item] : prev.map((i,n) => n === index ? item : i); });
+    setProductQuery(""); setProductSearchOpen(false); barcodeRef.current?.focus();
+  };
+  const scanProduct = () => {
+    const q = productQuery.trim().toLowerCase();
+    const stock = stockItems.find(s => [s.code,s.sku,s.name,...s.variants.map(v => v.sku)].some(v => v?.toLowerCase() === q));
+    if (!stock) { setProductSearchOpen(true); showToast("No exact barcode or product code found. Search by product name below."); return; }
+    addStockProduct(stock, stock.variants.find(v => v.sku?.toLowerCase() === q));
+  };
+
   /* report filters — default to today */
   const [rptFrom, setRptFrom] = useState(today());
   const [rptTo, setRptTo] = useState(today());
@@ -648,7 +677,7 @@ export default function InvoicePage() {
   useEffect(() => {
     loadInvoices();
     fetch("/api/customers?lean=1").then(r => r.json()).then(d => setCustomers(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch("/api/stock?lean=1").then(r => r.json()).then(d => setStockItems(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/api/stock").then(r => r.json()).then(d => setStockItems(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   // Auto-fill amountPaid with available advance when a customer is selected
@@ -774,6 +803,14 @@ export default function InvoicePage() {
       : `@page{size:auto;margin:0;}html,body{margin:0;padding:0;}`;
     doPrint(html, pageStyle, `Invoice ${result.invNumber}`);
     setPdfLoading(false);
+  };
+
+  const previewPrint = (slip: boolean) => {
+    const validItems = items.filter(i => i.dt.trim());
+    if (!validItems.length) { showToast("Add at least one item"); return; }
+    const base = { logoUrl: `${window.location.origin}/logo.svg`, invNumber, description: desc, items: validItems, sub: subtotal, dis: discount, tot: total, paid: amountPaid, due: Math.max(0,total-amountPaid), customerName: walkName || "Walk-in Customer", phone: walkPhone, invDate: fmtDate(invDate), paymentMethod };
+    const html = slip ? buildWalkHTML(base) : buildRegularHTML({ ...base, cid: "", address: "", delDate: "" });
+    doPrint(html, slip ? "@page{size:80mm auto;margin:0;}html,body{width:72mm;margin:0;padding:0;}" : "@page{size:A4;margin:0;}html,body{margin:0;padding:0;}", `Invoice ${invNumber} preview`);
   };
 
   /* print existing invoice copy only (no status update) */
@@ -918,7 +955,7 @@ export default function InvoicePage() {
       {/* Toast */}
       {toast && (
         <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9999, background: "var(--ink)", color: "white", padding: "12px 20px", borderRadius: 12, fontSize: 13, fontWeight: 500, boxShadow: "var(--shm)", display: "flex", alignItems: "center", gap: 10 }}>
-          <i className="fa-solid fa-circle-check" style={{ color: "var(--blue4)" }}></i> {toast}
+          <i aria-hidden="true" className="fa-solid fa-circle-check" style={{ color: "var(--blue4)" }}></i> {toast}
         </div>
       )}
 
@@ -946,7 +983,7 @@ export default function InvoicePage() {
               display: "flex", alignItems: "center", gap: 7,
             }}
           >
-            <i className={`fa-solid ${t === "invoice" ? "fa-file-invoice" : "fa-chart-bar"}`}></i>
+            <i aria-hidden="true" className={`fa-solid ${t === "invoice" ? "fa-file-invoice" : "fa-chart-bar"}`}></i>
             {t === "invoice" ? "Create Invoice" : t === "list" ? "Invoices" : "Invoice Report"}
           </button>
         ))}
@@ -963,20 +1000,17 @@ export default function InvoicePage() {
           {formType && (
             <div>
               {/* Form header */}
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, paddingBottom: 14, borderBottom: "1.5px solid var(--bg2)" }}>
+              <div className="invoice-form-heading">
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 13px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: formType === "regular" ? "var(--blue5)" : "#e6f9f2", color: formType === "regular" ? "var(--blue)" : "var(--green)" }}>
-                    <i className={`fa-solid ${formType === "regular" ? "fa-user-check" : "fa-person-walking"}`}></i>
-                    {formType === "regular" ? "Regular Customer" : "Walk-in Customer"}
-                  </span>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", display: "flex", alignItems: "center", gap: 9 }}>
-                    <i className="fa-solid fa-file-invoice" style={{ color: "var(--blue2)", fontSize: 15 }}></i> Create Invoice
+                    <i aria-hidden="true" className="fa-solid fa-file-invoice" style={{ color: "var(--blue2)", fontSize: 15 }}></i> Create Invoice
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div className="invoice-heading-controls">
                   <span style={{ color: "var(--muted)", fontSize: 12 }}>Invoice: <strong style={{ color: "var(--blue)", fontFamily: "monospace" }}>#{invNumber}</strong></span>
-                  <button onClick={resetForm} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--blue)", border: "1.5px solid var(--bg3)", display: "flex", alignItems: "center", gap: 6 }}>
-                    <i className="fa-solid fa-rotate-left"></i> New Invoice
+                  <input className="invoice-heading-date" aria-label="Invoice date" type="date" value={invDate} onChange={e => setInvDate(e.target.value)} />
+                  <button className="new-invoice-button" onClick={resetForm} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--blue)", border: "1.5px solid var(--bg3)", display: "flex", alignItems: "center", gap: 6 }}>
+                    <i aria-hidden="true" className="fa-solid fa-rotate-left"></i> New Invoice
                   </button>
                 </div>
               </div>
@@ -1040,29 +1074,15 @@ export default function InvoicePage() {
                 </div>
               )}
 
-              {/* ── Common date / description fields ── */}
-              <div style={{ display: "grid", gridTemplateColumns: formType === "regular" ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 14 }}>
-                <div>
-                  <label style={lbl}>Invoice Date</label>
-                  <input type="date" value={invDate} onChange={e => setInvDate(e.target.value)} style={inp} />
-                </div>
-                {/* Delivery date only for Regular */}
-                {formType === "regular" && (
-                  <div>
-                    <label style={lbl}>Delivery Date</label>
-                    <input type="date" value={delDate} onChange={e => setDelDate(e.target.value)} style={inp} />
-                  </div>
-                )}
-                <div style={{ gridColumn: formType === "regular" ? "span 2" : "span 1" }}>
-                  <label style={lbl}>Order Description</label>
-                  <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} placeholder="e.g. Qameez Shalwar x2 (White Lawn), Waistcoat x1 (Black)" style={{ ...inp, resize: "vertical" }} />
-                </div>
+              <div className="product-search-bar">
+                <div className="barcode-field"><i aria-hidden="true" className="fa-solid fa-barcode"/><input ref={barcodeRef} aria-label="Scan barcode or enter product code" placeholder="Scan Barcode or Enter Product Code…" value={productQuery} onChange={e => { setProductQuery(e.target.value); setProductSearchOpen(true); }} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); scanProduct(); } if (e.key === "Escape") setProductSearchOpen(false); }} /><i aria-hidden="true" className="fa-regular fa-keyboard"/></div>
+                <button className="scan-button" onClick={() => { barcodeRef.current?.focus(); if (productQuery.trim()) scanProduct(); else showToast("Scan with your barcode reader, then press Enter"); }}><i aria-hidden="true" className="fa-solid fa-barcode"/> Scan Barcode</button>
+                <button className="product-search-button" onClick={() => { setProductSearchOpen(o => !o); barcodeRef.current?.focus(); }}><i aria-hidden="true" className="fa-solid fa-magnifying-glass"/> Search Product</button>
+                {productSearchOpen && <div className="product-search-results"><div className="product-results-heading">Products <button aria-label="Close product search" onClick={() => setProductSearchOpen(false)}>×</button></div>{stockItems.filter(s => `${s.name} ${s.code ?? ""} ${s.sku ?? ""} ${s.variants.map(v=>v.sku).join(" ")}`.toLowerCase().includes(productQuery.toLowerCase())).slice(0,8).map(stock => <button key={stock.id} onClick={() => addStockProduct(stock)}><span><strong>{stock.name}</strong><small>{stock.code || stock.sku || stock.unit}</small></span><strong>Rs {stock.salesPrice.toLocaleString()}</strong></button>)}{!stockItems.some(s => `${s.name} ${s.code ?? ""} ${s.sku ?? ""} ${s.variants.map(v=>v.sku).join(" ")}`.toLowerCase().includes(productQuery.toLowerCase())) && <p>No matching products.</p>}</div>}
               </div>
 
-              <div style={{ height: 1, background: "var(--bg2)", margin: "14px 0" }}></div>
-
               {/* ── Items table with product dropdown ── */}
-              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 10 }}>
+              <div className="invoice-items-scroll"><table className="invoice-items-table" style={{ width: "100%", borderCollapse: "collapse", marginBottom: 10 }}>
                 <thead>
                   <tr style={{ background: "var(--ink)" }}>
                     <th style={th}>Product</th>
@@ -1152,7 +1172,7 @@ export default function InvoicePage() {
                           )}
                         </td>
                         <td style={{ padding: "6px 8px", textAlign: "right" }}>
-                          <input type="number" value={item.q} min={1} onChange={e => updateItem(idx, "q", e.target.value)} style={{ border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, width: 50, textAlign: "right", outline: "none" }} />
+                          <div className="quantity-stepper"><button aria-label={`Decrease quantity for item ${idx + 1}`} disabled={item.q <= 1} onClick={() => updateItem(idx, "q", Math.max(1,item.q-1))}>−</button><input aria-label={`Quantity for item ${idx + 1}`} type="number" value={item.q} min={1} onChange={e => updateItem(idx, "q", e.target.value)} /><button aria-label={`Increase quantity for item ${idx + 1}`} onClick={() => updateItem(idx, "q", item.q+1)}>+</button></div>
                         </td>
                         <td style={{ padding: "6px 8px", textAlign: "right" }}>
                           <input type="number" value={item.r} min={0} onChange={e => updateItem(idx, "r", e.target.value)} style={{ border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, width: 80, textAlign: "right", outline: "none" }} />
@@ -1161,23 +1181,25 @@ export default function InvoicePage() {
                           Rs {item.a.toLocaleString()}
                         </td>
                         <td style={{ padding: "6px 4px", textAlign: "center" }}>
-                          <button onClick={() => removeItem(idx)} disabled={items.length === 1} style={{ background: "none", border: "none", color: "var(--red)", cursor: items.length === 1 ? "not-allowed" : "pointer", fontSize: 13, padding: 4, opacity: items.length === 1 ? .3 : .6 }}
+                          <button aria-label={`Remove item ${idx + 1}`} onClick={() => removeItem(idx)} disabled={items.length === 1} style={{ background: "none", border: "none", color: "var(--red)", cursor: items.length === 1 ? "not-allowed" : "pointer", fontSize: 13, padding: 4, opacity: items.length === 1 ? .3 : .6 }}
                             onMouseEnter={e => { if (items.length > 1) (e.currentTarget as HTMLElement).style.opacity = "1"; }}
                             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = items.length === 1 ? ".3" : ".6"; }}>
-                            <i className="fa-solid fa-xmark"></i>
+                            <i aria-hidden="true" className="fa-regular fa-trash-can"></i>
                           </button>
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
-              </table>
-              <button onClick={addItem} style={{ marginBottom: 14, padding: "7px 16px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--blue)", border: "1.5px solid var(--bg3)", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <i className="fa-solid fa-plus"></i> Add Item
+              </table></div>
+              <div className="invoice-item-actions"><button onClick={addItem} style={{ marginBottom: 14, padding: "7px 16px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--blue)", border: "1.5px solid var(--bg3)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <i aria-hidden="true" className="fa-solid fa-plus"></i> Add Item
               </button>
 
+              <button className="clear-items-button" onClick={() => { if (window.confirm("Clear all invoice items?")) setItems([{dt:"",q:1,r:0,a:0}]); }}><i aria-hidden="true" className="fa-regular fa-trash-can"/> Clear All</button></div>
+              <div className="invoice-summary-row"><div className="invoice-description"><label htmlFor="invoice-description"><i aria-hidden="true" className="fa-solid fa-clipboard-list"/> Order Description <span>(Optional)</span></label><textarea id="invoice-description" value={desc} onChange={e => setDesc(e.target.value)} rows={4} placeholder="e.g. Special stitching, color, size, etc…" /> </div>
               {/* ── Totals ── */}
-              <div style={{ background: "var(--bg)", borderRadius: 10, padding: "14px 16px", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+              <div className="invoice-totals" style={{ background: "var(--bg)", borderRadius: 10, padding: "14px 16px", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
                 <div style={{ display: "flex", gap: 30, fontSize: 13 }}>
                   <span style={{ color: "var(--muted)" }}>Subtotal:</span>
                   <span style={{ fontWeight: 600 }}>Rs {subtotal.toLocaleString()}</span>
@@ -1191,12 +1213,13 @@ export default function InvoicePage() {
                 </div>
               </div>
 
+              </div>
               {formType === "regular" ? (
                 <div style={{ marginTop: 14 }}>
                   {/* ── Advance banner ── */}
                   {customerAdvance > 0 && (
                     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: "var(--r2)", background: "var(--blue5)", border: "1.5px solid var(--blue2)", marginBottom: 10, fontSize: 12, color: "var(--blue)", fontWeight: 600 }}>
-                      <i className="fa-solid fa-circle-check" style={{ fontSize: 14, flexShrink: 0 }}></i>
+                      <i aria-hidden="true" className="fa-solid fa-circle-check" style={{ fontSize: 14, flexShrink: 0 }}></i>
                       <span>
                         Advance on account: <strong>Rs {customerAdvance.toLocaleString()}</strong>
                         {amountPaid > 0 && amountPaid <= customerAdvance
@@ -1218,15 +1241,10 @@ export default function InvoicePage() {
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div style={{ marginTop: 14, padding: "10px 14px", background: "var(--bg)", borderRadius: "var(--r2)", border: "1.5px solid var(--bg2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 600 }}>Total Due</span>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: "var(--ink)" }}>Rs {total.toLocaleString()}</span>
-                </div>
-              )}
+              ) : null}
 
               {/* ── Payment Method ── */}
-              <div style={{ marginTop: 14 }}>
+              <div className="invoice-payment-method" style={{ marginTop: 14 }}>
                 <label style={lbl}>Payment Received By</label>
                 <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={inp}>
                   <option value="Cash">Cash</option>
@@ -1235,48 +1253,38 @@ export default function InvoicePage() {
                 </select>
               </div>
 
-              {/* ── Actions ── */}
-              <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
-                <button onClick={saveInvoice} disabled={saving} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", opacity: saving ? .7 : 1 }}>
-                  <i className={`fa-solid ${saving ? "fa-spinner fa-spin" : "fa-floppy-disk"}`}></i>
-                  {saving ? "Saving..." : "Save Invoice"}
-                </button>
-                <button onClick={printInvoice} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
-                  <i className="fa-solid fa-print"></i>
-                  {formType === "walk" ? "Print & Complete Invoice" : "Print & Complete Invoice"}
-                </button>
-              </div>
             </div>
           )}
         </div>
 
         {/* ─── RIGHT: Recent Invoices ─── */}
+        <div className="invoice-right-column">
         <div className="invoice-history" style={{ ...card, width: "36%", minWidth: 0, marginBottom: 0 }}>
           <div style={{ display: "flex", alignItems: "center", marginBottom: 18, paddingBottom: 14, borderBottom: "1.5px solid var(--bg2)" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", display: "flex", alignItems: "center", gap: 9 }}>
-              <i className="fa-solid fa-list" style={{ color: "var(--blue2)", fontSize: 15 }}></i> {activeTab === "list" ? "All Invoices" : "Recent Invoices"}
+              <i aria-hidden="true" className="fa-solid fa-list" style={{ color: "var(--blue2)", fontSize: 15 }}></i> {activeTab === "list" ? "All Invoices" : "Recent Invoices"}
             </div>
             <button className="invoice-view-all" onClick={() => setActiveTab(activeTab === "list" ? "invoice" : "list")}>{activeTab === "list" ? "Create Invoice" : "View All"}</button>
           </div>
           {loading ? (
             <div style={{ textAlign: "center", padding: "32px 0", color: "var(--muted)", fontSize: 13 }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 22, marginBottom: 10, display: "block" }}></i>
+              <i aria-hidden="true" className="fa-solid fa-spinner fa-spin" style={{ fontSize: 22, marginBottom: 10, display: "block" }}></i>
               Loading...
             </div>
-          ) : invoices.length === 0 ? (
+          ) : visibleInvoices.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
-              <i className="fa-solid fa-file-invoice" style={{ fontSize: 28, marginBottom: 10, display: "block", opacity: .3 }}></i>
+              <i aria-hidden="true" className="fa-solid fa-file-invoice" style={{ fontSize: 28, marginBottom: 10, display: "block", opacity: .3 }}></i>
               <div style={{ fontWeight: 600, fontSize: 14 }}>No invoices yet</div>
               <div style={{ fontSize: 12, marginTop: 4 }}>Create your first invoice above</div>
             </div>
           ) : activeTab === "invoice" ? (
-            <><div className="recent-invoice-cards">{invoices.slice(0, 5).map(inv => <button key={inv.id} onClick={() => setViewInvoice(inv)}>
-              <i className="fa-solid fa-file-invoice" /><span><strong>{inv.invNumber}</strong><small>{inv.customerName || "Walk-in Customer"}</small></span><span className="invoice-card-amount"><strong>Rs {inv.total.toLocaleString()}</strong><small>{fmtDate(inv.invoiceDate)}</small></span><span className={`invoice-status ${inv.status}`}>{inv.status}</span>
-            </button>)}</div><div className="invoice-shortcuts"><button onClick={printInvoice}><i className="fa-solid fa-print"/>Print & Complete</button><button onClick={saveInvoice} disabled={saving}><i className="fa-solid fa-floppy-disk"/>Save Invoice</button><button onClick={resetForm}><i className="fa-solid fa-rotate-left"/>New Invoice</button><button onClick={() => { if (window.confirm("Clear the current invoice?")) resetForm(); }}><i className="fa-solid fa-xmark"/>Clear Form</button></div></>
+            <><div className="recent-invoice-cards">{visibleInvoices.slice(0, 5).map(inv => <button key={inv.id} onClick={() => setViewInvoice(inv)}>
+              <i aria-hidden="true" className="fa-solid fa-file-invoice" /><span><strong>{inv.invNumber}</strong><small>{inv.customerName || "Walk-in Customer"}</small></span><span className="invoice-card-amount"><strong>Rs {inv.total.toLocaleString()}</strong><small>{fmtDate(inv.invoiceDate)}</small></span><span className={`invoice-status ${inv.status}`}>{inv.status}</span>
+            </button>)}</div></>
           ) : (
             (() => {
-              const totalPages = Math.ceil(invoices.length / PAGE_SIZE);
-              const pageInvoices = invoices.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+              const totalPages = Math.ceil(visibleInvoices.length / PAGE_SIZE);
+              const pageInvoices = visibleInvoices.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
               return (
                 <>
                   <div style={{ overflowX: "auto" }}>
@@ -1323,21 +1331,21 @@ export default function InvoicePage() {
                                     title="View Invoice"
                                     style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(16,87,160,.3)" }}
                                   >
-                                    <i className="fa-solid fa-eye" style={{ fontSize: 9 }}></i> View
+                                    <i aria-hidden="true" className="fa-solid fa-eye" style={{ fontSize: 9 }}></i> View
                                   </button>
                                   <button
                                     onClick={() => openWhatsApp(inv)}
                                     title="Send via WhatsApp"
                                     style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#25d366,#128c7e)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(37,211,102,.3)" }}
                                   >
-                                    <i className="fa-brands fa-whatsapp" style={{ fontSize: 11 }}></i> WA
+                                    <i aria-hidden="true" className="fa-brands fa-whatsapp" style={{ fontSize: 11 }}></i> WA
                                   </button>
                                   <button
                                     onClick={() => deleteInvoice(inv)}
                                     title="Delete Invoice"
                                     style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#e03c3c,#c02020)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(224,60,60,.3)" }}
                                   >
-                                    <i className="fa-solid fa-trash" style={{ fontSize: 9 }}></i> Delete
+                                    <i aria-hidden="true" className="fa-solid fa-trash" style={{ fontSize: 9 }}></i> Delete
                                   </button>
                                   {inv.status === "pending" && (
                                     <button
@@ -1345,7 +1353,7 @@ export default function InvoicePage() {
                                       title="Edit Invoice"
                                       style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(245,158,11,.3)" }}
                                     >
-                                      <i className="fa-solid fa-pen" style={{ fontSize: 9 }}></i> Edit
+                                      <i aria-hidden="true" className="fa-solid fa-pen" style={{ fontSize: 9 }}></i> Edit
                                     </button>
                                   )}
                                   {inv.status !== "paid" && (
@@ -1354,7 +1362,7 @@ export default function InvoicePage() {
                                       title="Mark as Paid & Print"
                                       style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(34,168,110,.3)" }}
                                     >
-                                      <i className="fa-solid fa-print" style={{ fontSize: 9 }}></i> Print
+                                      <i aria-hidden="true" className="fa-solid fa-print" style={{ fontSize: 9 }}></i> Print
                                     </button>
                                   )}
                                 </div>
@@ -1368,7 +1376,7 @@ export default function InvoicePage() {
                   {totalPages > 1 && (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, paddingTop: 14, borderTop: "1.5px solid var(--bg2)" }}>
                       <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                        Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, invoices.length)} of {invoices.length}
+                        Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, visibleInvoices.length)} of {visibleInvoices.length}
                       </span>
                       <div style={{ display: "flex", gap: 6 }}>
                         <button
@@ -1376,7 +1384,7 @@ export default function InvoicePage() {
                           disabled={page === 1}
                           style={{ padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: page === 1 ? "not-allowed" : "pointer", background: "transparent", color: page === 1 ? "var(--muted)" : "var(--blue)", border: "1.5px solid var(--bg3)", opacity: page === 1 ? .5 : 1 }}
                         >
-                          <i className="fa-solid fa-chevron-left" style={{ fontSize: 10 }}></i> Prev
+                          <i aria-hidden="true" className="fa-solid fa-chevron-left" style={{ fontSize: 10 }}></i> Prev
                         </button>
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
                           <button
@@ -1392,7 +1400,7 @@ export default function InvoicePage() {
                           disabled={page === totalPages}
                           style={{ padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: page === totalPages ? "not-allowed" : "pointer", background: "transparent", color: page === totalPages ? "var(--muted)" : "var(--blue)", border: "1.5px solid var(--bg3)", opacity: page === totalPages ? .5 : 1 }}
                         >
-                          Next <i className="fa-solid fa-chevron-right" style={{ fontSize: 10 }}></i>
+                          Next <i aria-hidden="true" className="fa-solid fa-chevron-right" style={{ fontSize: 10 }}></i>
                         </button>
                       </div>
                     </div>
@@ -1401,6 +1409,18 @@ export default function InvoicePage() {
               );
             })()
           )}
+        </div>
+        {activeTab === "invoice" && <>
+          <div className="invoice-action-panel">
+            <button onClick={() => previewPrint(false)}><i aria-hidden="true" className="fa-solid fa-print"/>Print Invoice</button>
+            <button onClick={() => previewPrint(true)}><i aria-hidden="true" className="fa-solid fa-receipt"/>Print Slip</button>
+            <button onClick={saveDraft}><i aria-hidden="true" className="fa-regular fa-floppy-disk"/>Save Draft</button>
+            <button onClick={() => { if (window.confirm("Discard current invoice?")) resetForm(); }}><i aria-hidden="true" className="fa-solid fa-xmark"/>Cancel</button>
+          </div>
+          {draftAvailable && <button className="restore-draft" onClick={restoreDraft}>Restore saved draft <span>Saved on this device</span></button>}
+          <button className="complete-invoice-button" disabled={saving || pdfLoading} onClick={printInvoice}><i aria-hidden="true" className="fa-solid fa-print"/>{saving || pdfLoading ? "Preparing…" : "Print & Complete Invoice"}</button>
+          <button className="save-without-print" disabled={saving} onClick={saveInvoice}>{saving ? "Saving…" : "Save invoice without printing"}</button>
+        </>}
         </div>
       </div>
       )} {/* end invoice tab */}
@@ -1430,7 +1450,7 @@ export default function InvoicePage() {
         const statCard = (icon: string, label: string, value: string, color: string, bg: string) => (
           <div style={{ background: bg, border: `1.5px solid ${color}33`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 44, height: 44, borderRadius: 10, background: `${color}22`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color, flexShrink: 0 }}>
-              <i className={`fa-solid ${icon}`}></i>
+              <i aria-hidden="true" className={`fa-solid ${icon}`}></i>
             </div>
             <div>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ink3)", letterSpacing: ".4px", textTransform: "uppercase", marginBottom: 3 }}>{label}</div>
@@ -1444,7 +1464,7 @@ export default function InvoicePage() {
             {/* Filters */}
             <div style={{ ...card, marginBottom: 0 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", marginBottom: 16, display: "flex", alignItems: "center", gap: 9 }}>
-                <i className="fa-solid fa-filter" style={{ color: "var(--blue2)", fontSize: 14 }}></i> Filters
+                <i aria-hidden="true" className="fa-solid fa-filter" style={{ color: "var(--blue2)", fontSize: 14 }}></i> Filters
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 12, alignItems: "flex-end" }}>
                 <div>
@@ -1472,7 +1492,7 @@ export default function InvoicePage() {
                     onClick={() => { setRptFrom(today()); setRptTo(today()); setRptType(""); setRptCustomer(""); }}
                     style={{ padding: "9px 16px", border: "1.5px solid var(--bg2)", borderRadius: "var(--r2)", background: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--ink3)", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
                   >
-                    <i className="fa-solid fa-rotate-left" style={{ fontSize: 11 }}></i> Reset
+                    <i aria-hidden="true" className="fa-solid fa-rotate-left" style={{ fontSize: 11 }}></i> Reset
                   </button>
                 </div>
               </div>
@@ -1491,7 +1511,7 @@ export default function InvoicePage() {
             <div style={card}>
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                  <i className="fa-solid fa-table-list" style={{ color: "var(--blue2)", fontSize: 14 }}></i>
+                  <i aria-hidden="true" className="fa-solid fa-table-list" style={{ color: "var(--blue2)", fontSize: 14 }}></i>
                   Invoice List
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1500,7 +1520,7 @@ export default function InvoicePage() {
                     onClick={() => downloadReportPDF({ filtered, totalIncome, totalReceived, totalDue, totalRefunded, refundedCount, rptFrom, rptTo, rptType, rptCustomer })}
                     style={{ padding: "7px 14px", border: "none", borderRadius: "var(--r2)", background: "linear-gradient(135deg,#7c3aed,#6d28d9)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "white", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(124,58,237,.3)" }}
                   >
-                    <i className="fa-solid fa-file-pdf" style={{ fontSize: 11 }}></i> Download PDF
+                    <i aria-hidden="true" className="fa-solid fa-file-pdf" style={{ fontSize: 11 }}></i> Download PDF
                   </button>
                   <button
                     onClick={() => {
@@ -1510,14 +1530,14 @@ export default function InvoicePage() {
                     }}
                     style={{ padding: "7px 14px", border: "none", borderRadius: "var(--r2)", background: "var(--blue2)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "white", display: "flex", alignItems: "center", gap: 6 }}
                   >
-                    <i className="fa-solid fa-print" style={{ fontSize: 11 }}></i> Print Report
+                    <i aria-hidden="true" className="fa-solid fa-print" style={{ fontSize: 11 }}></i> Print Report
                   </button>
                 </div>
               </div>
 
               {filtered.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
-                  <i className="fa-solid fa-file-invoice" style={{ fontSize: 28, display: "block", marginBottom: 10, opacity: .25 }}></i>
+                  <i aria-hidden="true" className="fa-solid fa-file-invoice" style={{ fontSize: 28, display: "block", marginBottom: 10, opacity: .25 }}></i>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>No invoices match your filters</div>
                 </div>
               ) : (
@@ -1589,11 +1609,11 @@ export default function InvoicePage() {
               {/* Header */}
               <div style={{ padding: "18px 24px", borderBottom: "1.5px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#92400e,#d97706)", borderRadius: "18px 18px 0 0", position: "sticky", top: 0, zIndex: 1 }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: "white", display: "flex", alignItems: "center", gap: 10 }}>
-                  <i className="fa-solid fa-pen-to-square" style={{ color: "#fde68a" }}></i>
+                  <i aria-hidden="true" className="fa-solid fa-pen-to-square" style={{ color: "#fde68a" }}></i>
                   Edit Invoice <span style={{ fontFamily: "monospace", fontSize: 14, opacity: .9 }}>#{editInvoice.invNumber}</span>
                 </div>
                 <button onClick={() => setEditInvoice(null)} style={{ background: "none", border: "none", fontSize: 16, color: "rgba(255,255,255,.6)", cursor: "pointer", width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <i className="fa-solid fa-xmark"></i>
+                  <i aria-hidden="true" className="fa-solid fa-xmark"></i>
                 </button>
               </div>
 
@@ -1727,7 +1747,7 @@ export default function InvoicePage() {
                             </td>
                             <td style={{ padding: "6px 4px", textAlign: "center" }}>
                               <button onClick={() => setEditItems(prev => prev.filter((_, i) => i !== idx))} disabled={editItems.length === 1} style={{ background: "none", border: "none", color: "var(--red)", cursor: editItems.length === 1 ? "not-allowed" : "pointer", fontSize: 13, padding: 4, opacity: editItems.length === 1 ? .3 : .6 }}>
-                                <i className="fa-solid fa-xmark"></i>
+                                <i aria-hidden="true" className="fa-solid fa-xmark"></i>
                               </button>
                             </td>
                           </tr>
@@ -1736,7 +1756,7 @@ export default function InvoicePage() {
                     </tbody>
                   </table>
                   <button onClick={() => setEditItems(prev => [...prev, { dt: "", q: 1, r: 0, a: 0 }])} style={{ padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "var(--bg)", color: "var(--blue)", border: "1.5px solid var(--bg3)", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    <i className="fa-solid fa-plus" style={{ fontSize: 10 }}></i> Add Item
+                    <i aria-hidden="true" className="fa-solid fa-plus" style={{ fontSize: 10 }}></i> Add Item
                   </button>
                 </div>
 
@@ -1773,10 +1793,10 @@ export default function InvoicePage() {
                 {/* Footer actions */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1.5px solid var(--bg2)" }}>
                   <button onClick={() => setEditInvoice(null)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--ink3)", border: "1.5px solid var(--bg3)", display: "flex", alignItems: "center", gap: 7 }}>
-                    <i className="fa-solid fa-xmark"></i> Cancel
+                    <i aria-hidden="true" className="fa-solid fa-xmark"></i> Cancel
                   </button>
                   <button onClick={saveEditInvoice} disabled={editSaving} style={{ padding: "11px 28px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: editSaving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white", border: "none", borderRadius: 24, opacity: editSaving ? .6 : 1, boxShadow: "0 4px 16px rgba(245,158,11,.3)" }}>
-                    {editSaving ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving…</> : <><i className="fa-solid fa-floppy-disk"></i> Update Invoice</>}
+                    {editSaving ? <><i aria-hidden="true" className="fa-solid fa-spinner fa-spin"></i> Saving…</> : <><i aria-hidden="true" className="fa-solid fa-floppy-disk"></i> Update Invoice</>}
                   </button>
                 </div>
               </div>
@@ -1796,10 +1816,10 @@ export default function InvoicePage() {
               {/* Header */}
               <div style={{ padding: "18px 24px", borderBottom: "1.5px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,var(--ink),#0e3460)", borderRadius: "18px 18px 0 0", position: "sticky", top: 0 }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: "white", display: "flex", alignItems: "center", gap: 10 }}>
-                  <i className="fa-solid fa-file-invoice" style={{ color: "var(--gold)" }}></i> Invoice Details
+                  <i aria-hidden="true" className="fa-solid fa-file-invoice" style={{ color: "var(--gold)" }}></i> Invoice Details
                 </div>
                 <button onClick={() => setViewInvoice(null)} style={{ background: "none", border: "none", fontSize: 16, color: "rgba(255,255,255,.6)", cursor: "pointer", width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <i className="fa-solid fa-xmark"></i>
+                  <i aria-hidden="true" className="fa-solid fa-xmark"></i>
                 </button>
               </div>
               {/* Body */}
@@ -1884,14 +1904,14 @@ export default function InvoicePage() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18, paddingTop: 12, borderTop: "1.5px solid var(--bg2)", flexWrap: "wrap", gap: 10 }}>
                   <button onClick={() => setViewInvoice(null)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--ink3)", border: "1.5px solid var(--bg3)", display: "flex", alignItems: "center", gap: 7 }}>
-                    <i className="fa-solid fa-xmark"></i> Close
+                    <i aria-hidden="true" className="fa-solid fa-xmark"></i> Close
                   </button>
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                     <button onClick={() => openWhatsApp(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#25d366,#128c7e)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(37,211,102,.3)" }}>
-                      <i className="fa-brands fa-whatsapp" style={{ fontSize: 15 }}></i> Send via WhatsApp
+                      <i aria-hidden="true" className="fa-brands fa-whatsapp" style={{ fontSize: 15 }}></i> Send via WhatsApp
                     </button>
                     <button onClick={() => printInvoiceCopy(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
-                      <i className="fa-solid fa-print"></i> Print Invoice
+                      <i aria-hidden="true" className="fa-solid fa-print"></i> Print Invoice
                     </button>
                   </div>
                 </div>

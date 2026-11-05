@@ -26,12 +26,14 @@ export async function GET(req: NextRequest) {
         select: {
           id: true,
           name: true,
+          code: true,
+          sku: true,
           salesPrice: true,
           unit: true,
           hasVariants: true,
           variants: {
             orderBy: { createdAt: "asc" as const },
-            select: { id: true, size: true, color: true, quantity: true, salesPrice: true },
+            select: { id: true, sku: true, size: true, color: true, quantity: true, salesPrice: true },
           },
         },
       });

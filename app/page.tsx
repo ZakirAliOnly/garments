@@ -17,6 +17,7 @@ import type { Page } from "@/types";
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null); // null = checking
   const [activePage, setActivePage] = useState<Page>("dashboard");
+  const [invoiceSearch, setInvoiceSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -34,12 +35,12 @@ export default function Home() {
     <div>
       <Sidebar
         activePage={activePage}
-        setActivePage={(p) => { setActivePage(p); setSidebarOpen(false); }}
+        setActivePage={(p) => { setActivePage(p); setInvoiceSearch(""); setSidebarOpen(false); }}
         onLogout={async () => { await authClient.signOut(); setIsLoggedIn(false); }}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      <Header activePage={activePage} onMenuToggle={() => setSidebarOpen(o => !o)} />
+      <Header onNavigate={(page, query = "") => { setActivePage(page); setInvoiceSearch(query); }} activePage={activePage} onMenuToggle={() => setSidebarOpen(o => !o)} />
       <main className="workspace" style={{
         marginLeft: "var(--sw)",
         marginTop: "var(--hh)",
@@ -48,7 +49,7 @@ export default function Home() {
       }}>
         {activePage === "dashboard" && <DashboardPage setActivePage={setActivePage} />}
         {activePage === "stock" && <StockPage />}
-        {activePage === "invoice" && <InvoicePage />}
+        {activePage === "invoice" && <InvoicePage searchQuery={invoiceSearch} />}
         {activePage === "refund" && <RefundPage />}
         {activePage === "cashbook" && <CashbookPage />}
         {activePage === "purchase" && <PurchasePage />}
