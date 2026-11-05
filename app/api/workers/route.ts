@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -11,7 +11,7 @@ function nextWorkerId(workers: { workerId: string }[]) {
 }
 
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("workers");
   if (denied) return denied;
   try {
     const status = req.nextUrl.searchParams.get("status"); // "active" | "leave" | "inactive" | null (all)
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("workers");
   if (denied) return denied;
   try {
     const body = await req.json();

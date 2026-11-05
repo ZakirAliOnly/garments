@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -16,7 +16,7 @@ async function generateSku(name: string): Promise<string> {
 }
 
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("stock");
   if (denied) return denied;
   try {
     const lean = req.nextUrl.searchParams.get("lean") === "1";
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("stock");
   if (denied) return denied;
   try {
     const body = await req.json();

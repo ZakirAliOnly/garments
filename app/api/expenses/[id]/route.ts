@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import {
   financialTransaction,
   financeError,
@@ -14,7 +14,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("expenses");
   if (denied) return denied;
   try {
     const { id } = await params,
@@ -57,7 +57,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("expenses");
   if (denied) return denied;
   try {
     const { id } = await params,

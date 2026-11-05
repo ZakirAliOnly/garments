@@ -8,25 +8,50 @@ const LONG_TTL = 60 * 60 * 24 * 30; // 30 days ("remember me")
 
 function secret(): string {
   const s = process.env.AUTH_SECRET;
-  if (!s || s.length < 16) throw new Error("AUTH_SECRET must be set (16+ characters)");
+  if (!s || s.length < 16)
+    throw new Error("AUTH_SECRET must be set (16+ characters)");
   return s;
 }
 
 const b64 = (s: string) => Buffer.from(s).toString("base64url");
-const sign = (data: string) => createHmac("sha256", secret()).update(data).digest("base64url");
+const sign = (data: string) =>
+  createHmac("sha256", secret()).update(data).digest("base64url");
 /** Changes whenever the password changes, so old sessions stop working. */
-const pwVersion = (passwordHash: string) => createHash("sha256").update(passwordHash).digest("hex").slice(0, 12);
+const pwVersion = (passwordHash: string) =>
+  createHash("sha256").update(passwordHash).digest("hex").slice(0, 12);
 
-interface Payload { uid: string; v: string; exp: number }
+const sessionVersion = (user: {
+  passwordHash: string;
+  sessionVersion?: number;
+}) =>
+  user.sessionVersion
+    ? pwVersion(`${user.passwordHash}:${user.sessionVersion}`)
+    : pwVersion(user.passwordHash);
 
-export function createToken(user: { id: string; passwordHash: string }, remember: boolean) {
+interface Payload {
+  uid: string;
+  v: string;
+  exp: number;
+}
+
+export function createToken(
+  user: { id: string; passwordHash: string; sessionVersion?: number },
+  remember: boolean,
+) {
   const ttl = remember ? LONG_TTL : SHORT_TTL;
-  const payload: Payload = { uid: user.id, v: pwVersion(user.passwordHash), exp: Math.floor(Date.now() / 1000) + ttl };
+  const payload: Payload = {
+    uid: user.id,
+    v: sessionVersion(user),
+    exp: Math.floor(Date.now() / 1000) + ttl,
+  };
   const body = b64(JSON.stringify(payload));
   return { token: `${body}.${sign(body)}`, ttl };
 }
 
-export async function setSessionCookie(user: { id: string; passwordHash: string }, remember: boolean) {
+export async function setSessionCookie(
+  user: { id: string; passwordHash: string; sessionVersion?: number },
+  remember: boolean,
+) {
   const { token, ttl } = createToken(user, remember);
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -48,11 +73,21 @@ export async function getSessionUser() {
   const [body, sig] = token.split(".");
   if (!body || !sig) return null;
   const expected = sign(body);
-  if (sig.length !== expected.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  if (
+    sig.length !== expected.length ||
+    !timingSafeEqual(Buffer.from(sig), Buffer.from(expected))
+  )
+    return null;
   let payload: Payload;
-  try { payload = JSON.parse(Buffer.from(body, "base64url").toString()); } catch { return null; }
+  try {
+    payload = JSON.parse(Buffer.from(body, "base64url").toString());
+  } catch {
+    return null;
+  }
   if (!payload.exp || payload.exp < Date.now() / 1000) return null;
-  const user = await prisma.adminUser.findUnique({ where: { id: payload.uid } });
-  if (!user || pwVersion(user.passwordHash) !== payload.v) return null;
+  const user = await prisma.adminUser.findUnique({
+    where: { id: payload.uid },
+  });
+  if (!user || !user.active || sessionVersion(user) !== payload.v) return null;
   return user;
 }

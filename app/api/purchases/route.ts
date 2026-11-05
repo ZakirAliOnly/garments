@@ -6,7 +6,7 @@ import {
   date,
   resolveMethod,
 } from "@/lib/finance/core";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -28,7 +28,7 @@ async function nextBatchNumber(prisma: import("@/lib/finance/core").Tx) {
 }
 
 export async function GET() {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("purchase");
   if (denied) return denied;
   const purchases = await prisma.purchase.findMany({
     include: { supplier: { select: { name: true, supplierId: true } } },
@@ -38,7 +38,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("purchase");
   if (denied) return denied;
   try {
     const body = await req.json();

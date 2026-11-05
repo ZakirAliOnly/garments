@@ -1,3 +1,4 @@
+import type { SessionUser } from "./permissions";
 async function post(url: string, body?: unknown): Promise<{ error?: string }> {
   try {
     const res = await fetch(url, {
@@ -14,16 +15,15 @@ async function post(url: string, body?: unknown): Promise<{ error?: string }> {
 }
 
 export const authClient = {
-  signIn: (email: string, password: string, rememberMe: boolean) => post("/api/auth/login", { email, password, rememberMe }),
+  signIn: (email: string, password: string, rememberMe: boolean) =>
+    post("/api/auth/login", { email, password, rememberMe }),
   signOut: () => post("/api/auth/logout"),
   changePassword: (currentPassword: string, newPassword: string) =>
     post("/api/auth/change-password", { currentPassword, newPassword }),
-  async getSession(): Promise<boolean> {
-    try {
-      const res = await fetch("/api/auth/session", { cache: "no-store" });
-      return res.ok;
-    } catch {
-      return false;
-    }
+  async getSession(): Promise<SessionUser | null> {
+    const res = await fetch("/api/auth/session", { cache: "no-store" });
+    if (res.status === 401) return null;
+    if (!res.ok) throw new Error("Unable to check your session");
+    return (await res.json()).user;
   },
 };

@@ -1,9 +1,11 @@
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { getSessionUser, setSessionCookie } from "@/lib/auth/session";
 
 export async function POST(req: NextRequest) {
+  const denied=await requireModuleAccess("settings");if(denied)return denied;
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { currentPassword, newPassword } = await req.json().catch(() => ({}));

@@ -12,7 +12,7 @@ const rs = (n: number) =>
 const today = () =>
   new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
 export default function PaymentMethodsPage() {
-  const { data, isLoading, isError, refetch } = usePaymentMethods(),
+  const { data, isLoading, isError, refetch } = usePaymentMethods(true),
     cache = useQueryClient();
   const [modal, setModal] = useState<"method" | "transfer" | null>(null),
     [edit, setEdit] = useState<PaymentMethod | null>(null),

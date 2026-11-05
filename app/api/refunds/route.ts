@@ -6,7 +6,7 @@ import {
   resolveMethod,
   type Tx,
 } from "@/lib/finance/core";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -21,7 +21,7 @@ type RefundItem = {
 
 // GET /api/refunds — list refund/replace requests
 export async function GET() {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("refund");
   if (denied) return denied;
   try {
     const rows = await prisma.refundRequest.findMany({
@@ -38,7 +38,7 @@ export async function GET() {
 
 // POST /api/refunds — process a refund/replace request
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("refund");
   if (denied) return denied;
   try {
     const body = await req.json();

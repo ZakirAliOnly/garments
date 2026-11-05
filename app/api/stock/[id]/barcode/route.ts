@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import bwipjs from "bwip-js/node";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ function escapeHtml(value: string) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("stock");
   if (denied) return denied;
   const { id } = await params;
   const item = await prisma.stockItem.findUnique({ where: { id }, include: { variants: true } });

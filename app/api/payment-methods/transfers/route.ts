@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import {
   financialTransaction,
   financeError,
@@ -10,7 +10,7 @@ import {
 } from "@/lib/finance/core";
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("payment-methods");
   if (denied) return denied;
   try {
     const b = await req.json();

@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { prisma } from "@/lib/prisma";
 import {
   financialTransaction,
@@ -8,7 +8,7 @@ import {
 } from "@/lib/finance/core";
 import { NextRequest, NextResponse } from "next/server";
 export async function GET() {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("payment-methods");
   if (denied) return denied;
   try {
     const [methods, sums, transfers] = await Promise.all([
@@ -53,7 +53,7 @@ export async function GET() {
   }
 }
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("payment-methods");
   if (denied) return denied;
   try {
     const body = await req.json();

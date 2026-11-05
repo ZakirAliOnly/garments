@@ -7,13 +7,13 @@ import {
   date,
   resolveMethod,
 } from "@/lib/finance/core";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/cashbook — list all entries with running balance
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("cashbook");
   if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const paymentMethodId = searchParams.get("paymentMethodId");
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/cashbook — one atomic manual ledger movement
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("cashbook");
   if (denied) return denied;
   try {
     const b = await req.json();

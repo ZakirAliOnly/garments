@@ -22,7 +22,7 @@ export function useCustomersLean() {
   return useQuery<CustomerOption[]>({
     queryKey: ["customers", "lean"],
     queryFn: async () => {
-      const res = await fetch("/api/customers?lean=1");
+      const res = await fetch("/api/lookups/customers");
       if (!res.ok) throw new Error("Failed to fetch customers");
       return res.json();
     },

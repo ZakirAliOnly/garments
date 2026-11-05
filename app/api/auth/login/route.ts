@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   }
   const user = await prisma.adminUser.findUnique({ where: { email: email.trim().toLowerCase() } });
   const ok = await verifyPassword(password, user?.passwordHash ?? (await DUMMY_HASH));
-  if (!user || !ok) return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
+  if (!user || !user.active || !ok) return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
   await setSessionCookie(user, !!rememberMe);
   return NextResponse.json({ ok: true });
 }

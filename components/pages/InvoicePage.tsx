@@ -678,8 +678,8 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
   };
   useEffect(() => {
     loadInvoices();
-    fetch("/api/customers?lean=1").then(r => r.json()).then(d => setCustomers(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch("/api/stock").then(r => r.json()).then(d => setStockItems(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/api/lookups/customers").then(r => r.json()).then(d => setCustomers(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/api/lookups/stock?purpose=invoice").then(r => r.json()).then(d => setStockItems(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   // Auto-fill amountPaid with available advance when a customer is selected
