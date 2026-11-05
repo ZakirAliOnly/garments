@@ -7,6 +7,7 @@ import DashboardPage from "@/components/pages/DashboardPage";
 import StockPage from "@/components/pages/StockPage";
 import InvoicePage from "@/components/pages/InvoicePage";
 import RefundPage from "@/components/pages/RefundPage";
+import ExpensesPage from "@/components/pages/ExpensesPage";
 import CashbookPage from "@/components/pages/CashbookPage";
 import PurchasePage from "@/components/pages/PurchasePage";
 import SettingsPage from "@/components/pages/SettingsPage";
@@ -53,6 +54,7 @@ export default function Home() {
         {activePage === "stock" && <StockPage />}
         {activePage === "invoice" && <InvoicePage searchQuery={invoiceSearch} />}
         {activePage === "refund" && <RefundPage />}
+        {activePage === "expenses" && <ExpensesPage />}
         {activePage === "cashbook" && <CashbookPage />}
         {activePage === "purchase" && <PurchasePage />}
         {activePage === "settings" && <SettingsPage />}

@@ -5,6 +5,7 @@ export default function PaymentMethodSelect({
   value,
   onChange,
   byId = false,
+  includeArchivedId,
   variant = "select",
   id,
   label = "Payment method",
@@ -13,6 +14,7 @@ export default function PaymentMethodSelect({
   value: string;
   onChange: (v: string) => void;
   byId?: boolean;
+  includeArchivedId?: string;
   variant?: "select" | "buttons";
   id?: string;
   label?: string;
@@ -20,7 +22,10 @@ export default function PaymentMethodSelect({
 }) {
   const generated = useId();
   const { data, isLoading, isError } = usePaymentMethods();
-  const active = useMemo(() => data?.methods.filter((m) => m.active), [data]);
+  const active = useMemo(
+    () => data?.methods.filter((m) => m.active || m.id === includeArchivedId),
+    [data, includeArchivedId],
+  );
   useEffect(() => {
     if (
       active?.length &&
@@ -32,30 +37,49 @@ export default function PaymentMethodSelect({
   }, [active, byId, value, onChange]);
   return (
     <>
-      {variant === "buttons" ? <div className="finance-segmented" role="group" aria-label={label}>
-        {isLoading ? <span>Loading methods…</span> : active?.map(m => <button type="button" key={m.id} aria-pressed={(byId?m.id:m.name)===value} className={(byId?m.id:m.name)===value?"selected":""} onClick={()=>onChange(byId?m.id:m.name)}>{m.name}</button>)}
-      </div> : <select
-        id={id ?? generated}
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={isLoading || isError || !active?.length}
-        required
-        style={style}
-      >
-        <option value="">
-          {isLoading
-            ? "Loading methods…"
-            : isError
-              ? "Methods unavailable"
-              : "Select payment method"}
-        </option>
-        {active?.map((m) => (
-          <option key={m.id} value={byId ? m.id : m.name}>
-            {m.name}
+      {variant === "buttons" ? (
+        <div className="finance-segmented" role="group" aria-label={label}>
+          {isLoading ? (
+            <span>Loading methods…</span>
+          ) : (
+            active?.map((m) => (
+              <button
+                type="button"
+                key={m.id}
+                aria-pressed={(byId ? m.id : m.name) === value}
+                className={(byId ? m.id : m.name) === value ? "selected" : ""}
+                onClick={() => onChange(byId ? m.id : m.name)}
+              >
+                {m.name}
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
+        <select
+          id={id ?? generated}
+          aria-label={label}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={isLoading || isError || !active?.length}
+          required
+          style={style}
+        >
+          <option value="">
+            {isLoading
+              ? "Loading methods…"
+              : isError
+                ? "Methods unavailable"
+                : "Select payment method"}
           </option>
-        ))}
-      </select>}
+          {active?.map((m) => (
+            <option key={m.id} value={byId ? m.id : m.name}>
+              {m.name}
+              {m.active ? "" : " (archived)"}
+            </option>
+          ))}
+        </select>
+      )}
       {isError && (
         <small className="finance-field-error" role="alert">
           Unable to load payment methods. Refresh before saving.
