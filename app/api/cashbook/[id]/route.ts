@@ -1,3 +1,4 @@
+import { requireExpenseFunds } from "@/lib/finance/expenses";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   financialTransaction,
@@ -35,6 +36,17 @@ export async function PATCH(
           b.paymentMethod !== undefined || b.paymentMethodId !== undefined
             ? await resolveMethod(tx, b.paymentMethod, b.paymentMethodId)
             : await resolveMethod(tx, null, old.paymentMethodId);
+      if (b.type === "debit")
+        await requireExpenseFunds(
+          tx,
+          method,
+          amount,
+          method.id === old.paymentMethodId
+            ? old.type === "debit"
+              ? old.amount
+              : -old.amount
+            : 0,
+        );
       if (old.customerId)
         await tx.customer.update({
           where: { id: old.customerId },

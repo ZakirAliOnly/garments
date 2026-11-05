@@ -8,7 +8,7 @@ Balances are derived from each method's opening balance plus its cashbook credit
 - Purchase advances and later supplier payments decrease the selected method. Multi-item orders post their advance once, distributed across uniquely numbered purchase records. Supplier returns recorded through the single-purchase API receive money back into the chosen method.
 - Refunds cancel unpaid invoice debt before returning cash. Cash payouts decrease the chosen method; an additional replacement payment increases it. An account-only adjustment changes the customer's balance without moving cash. Refund values are checked against the quantities and discounted prices on the original invoice.
 - Manual cashbook entries change the selected method. Editing a manual entry automatically reverses its old method/type/amount and applies the replacement; deleting it removes its effect. System-managed entries cannot be edited or deleted through Cashbook.
-- Transfers create linked debit/credit entries in one transaction and are excluded from income and expense totals. Request keys prevent a transfer from being posted twice. Transfers require sufficient funds. Other outgoing transactions can produce a negative balance, so an incomplete opening balance does not prevent recording a real payment.
+- Transfers create linked debit/credit entries in one transaction and are excluded from income and expense totals. Request keys prevent a transfer from being posted twice. Transfers and expense debits require sufficient funds. Existing invoice, purchase, refund, and payroll outflows retain their prior balance behavior.
 - Payment method names can change without losing their cashbook links. Methods can be archived, but history and balances remain visible. Opening balances are locked after the first entry; corrections use an explicit Cashbook adjustment.
 
 Money-writing endpoints use serializable database transactions with retries on serialization conflicts. Stock changes, document creation, customer/supplier balances, and cashbook movements commit together.
@@ -30,3 +30,13 @@ The migration was applied and verified on the Garments production branch on 2026
 ## Verification
 
 `scripts/smoke-finance.mjs` must target a local isolated server and requires `ADMIN_EMAIL` and `ADMIN_PASSWORD`. It creates labelled test records and preserves their history. It tests authentication, balance signs, transfer retries, cashbook reversals, invoice payment deltas, customer advances, refunds and replacements, purchase payments, monthly payroll, duplicate protection, concurrent transfers, archived methods, and rollback when stock operations fail.
+
+## Daily expenses
+
+The Expenses page records a single managed debit directly in the existing cashbook (`sourceType = expense`). No additional schema migration is required. Daily/monthly totals, date ranges, search, and payment-method filters use those same records, so each expense is counted once.
+
+Expenses require sufficient funds. Rs 2,000 against Rs 1,800 is rejected without saving anything; exactly Rs 1,800 is allowed and leaves zero. This check is enforced inside the serializable transaction, including when concurrent expenses compete for the same balance. Manual Cashbook debit entries use the same sufficient-funds rule. Other outgoing document flows retain their existing behavior.
+
+Editing an expense restores its prior debit for the balance check, then applies the replacement amount/method atomically. Deleting an expense restores the original method's balance. A version check prevents stale edits/deletions. Expense request keys protect retries against duplicate entries. Archived methods cannot receive new expenses, but historical expenses can retain their original archived method when corrected.
+
+`scripts/smoke-expenses.mjs` tests insufficient funds, exact-zero results, retries/concurrency, correction and deletion balance effects, invalid inputs, archived methods, and cashbook consistency against a local isolated server.

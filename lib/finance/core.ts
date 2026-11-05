@@ -30,6 +30,21 @@ export function date(value: unknown): Date {
   if (Number.isNaN(parsed.getTime())) throw new FinanceError("Invalid date");
   return parsed;
 }
+function isTransactionConflict(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  // Prisma errors can cross runtime/module boundaries, so inspect the stable
+  // error codes instead of depending on a particular generated class instance.
+  if ("code" in error && error.code === "P2034") return true;
+  return (
+    "name" in error &&
+    error.name === "DriverAdapterError" &&
+    "cause" in error &&
+    typeof error.cause === "object" &&
+    error.cause !== null &&
+    "kind" in error.cause &&
+    error.cause.kind === "TransactionWriteConflict"
+  );
+}
 export async function financialTransaction<T>(
   fn: (tx: Tx) => Promise<T>,
 ): Promise<T> {
@@ -40,17 +55,20 @@ export async function financialTransaction<T>(
         timeout: 25000,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2034" &&
-        attempt < 3
-      )
-        continue;
+      if (isTransactionConflict(error) && attempt < 3) continue;
       throw error;
     }
   }
 }
 export function financeError(error: unknown, fallback: string) {
+  if (isTransactionConflict(error))
+    return NextResponse.json(
+      {
+        error:
+          "The payment balance changed while saving. Refresh and try again.",
+      },
+      { status: 409 },
+    );
   if (error instanceof FinanceError)
     return NextResponse.json({ error: error.message }, { status: 400 });
   if (

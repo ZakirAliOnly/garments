@@ -395,7 +395,7 @@ export default function CashbookPage() {
   ];
 
   /* Derive entry type label */
-  const entryTypeLabel = (e: CashEntry) => e.invoiceId ? "Invoice" : "Ledger";
+  const entryTypeLabel = (e: CashEntry) => e.sourceType === "expense" ? "Expense" : e.invoiceId ? "Invoice" : "Ledger";
   const entryTypeBg = (e: CashEntry) => e.invoiceId ? "#e6f9f2" : "#f0eaff";
   const entryTypeColor = (e: CashEntry) => e.invoiceId ? "var(--green)" : "#7c5cbf";
 

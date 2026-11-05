@@ -1,3 +1,4 @@
+import { requireExpenseFunds } from "@/lib/finance/expenses";
 import {
   financialTransaction,
   financeError,
@@ -124,6 +125,7 @@ export async function POST(req: NextRequest) {
           b.paymentMethod || "Cash",
           b.paymentMethodId,
         );
+      if (b.type === "debit") await requireExpenseFunds(tx, method, amount);
       const entry = await tx.cashBookEntry.create({
         data: {
           paymentMethodId: method.id,
