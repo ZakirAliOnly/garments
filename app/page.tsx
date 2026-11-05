@@ -10,8 +10,6 @@ import RefundPage from "@/components/pages/RefundPage";
 import CashbookPage from "@/components/pages/CashbookPage";
 import PurchasePage from "@/components/pages/PurchasePage";
 import SettingsPage from "@/components/pages/SettingsPage";
-import KaregarPage from "@/components/pages/KaregarPage";
-import OrderUpdatePage from "@/components/pages/OrderUpdatePage";
 import ReportsPage from "@/components/pages/ReportsPage";
 import { authClient } from "@/lib/auth/client";
 import type { Page } from "@/types";
@@ -42,7 +40,7 @@ export default function Home() {
         onClose={() => setSidebarOpen(false)}
       />
       <Header activePage={activePage} onMenuToggle={() => setSidebarOpen(o => !o)} />
-      <main style={{
+      <main className="workspace" style={{
         marginLeft: "var(--sw)",
         marginTop: "var(--hh)",
         padding: "24px 24px 56px",
@@ -54,8 +52,6 @@ export default function Home() {
         {activePage === "refund" && <RefundPage />}
         {activePage === "cashbook" && <CashbookPage />}
         {activePage === "purchase" && <PurchasePage />}
-        {activePage === "workers" && <KaregarPage />}
-        {activePage === "orderupdate" && <OrderUpdatePage />}
         {activePage === "settings" && <SettingsPage />}
         {activePage === "reports" && <ReportsPage />}
       </main>
@@ -75,7 +71,7 @@ export default function Home() {
         fontSize: "11px",
         color: "var(--muted)"
       }}>
-        <span>Garments Tailor Management System &copy; 2025</span>
+        <span>Garments Tailor Management System &copy; {new Date().getFullYear()}</span>
         <span>Powered by <strong style={{ color: "var(--blue)" }}>AddsMint.com</strong></span>
       </footer>
     </div>
