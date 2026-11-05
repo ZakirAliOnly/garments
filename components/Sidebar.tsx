@@ -26,6 +26,7 @@ const sections: {
   {
     label: "More",
     items: [
+      { id: "activity", icon: "wave-square", label: "Activity Log" },
       { id: "reports", icon: "chart-line", label: "Reports" },
       { id: "settings", icon: "gear", label: "Settings" },
       { id: "user-management", icon: "user-shield", label: "User Management" },

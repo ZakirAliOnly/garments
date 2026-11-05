@@ -9,6 +9,7 @@ export const MODULES = [
   { id: "cashbook", label: "Cashbook", icon: "book-open" },
   { id: "workers", label: "Workers", icon: "users" },
   { id: "payment-methods", label: "Payment Method", icon: "wallet" },
+  { id: "activity", label: "Activity Log", icon: "wave-square" },
   { id: "reports", label: "Reports", icon: "chart-line" },
   { id: "settings", label: "Settings", icon: "gear" },
 ] as const;

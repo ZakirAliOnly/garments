@@ -334,3 +334,21 @@ model AdminUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+model ActivityEvent {
+  id String @id @default(dbgenerated("gen_random_uuid()::text"))
+  createdAt DateTime @default(now())
+  type String
+  entityType String
+  entityId String
+  description String
+  actorId String?
+  actorName String
+  actorEmail String?
+  amount Decimal? @db.Decimal(18, 2)
+  direction String?
+  status String?
+  method String?
+  @@index([createdAt, id])
+  @@index([type, createdAt])
+}

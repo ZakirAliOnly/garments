@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { hasPage, pagesFor, type SessionUser } from "@/lib/auth/permissions";
+import ActivityPage from "@/components/pages/ActivityPage";
 import UsersPage from "@/components/pages/UsersPage";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -143,6 +144,7 @@ export default function Home() {
         {activePage === "user-management" && user.role === "admin" && (
           <UsersPage currentUserId={user.id} />
         )}
+        {activePage === "activity" && <ActivityPage />}
         {activePage === "dashboard" && (
           <DashboardPage allowedPages={allowedPages} setActivePage={navigate} />
         )}
