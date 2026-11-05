@@ -977,11 +977,12 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
         {(["invoice", "list", "report"] as const).map(t => (
           <button
             key={t}
+            className="module-tab" aria-pressed={activeTab === t}
             onClick={() => setActiveTab(t)}
             style={{
               padding: "10px 22px", fontSize: 13, fontWeight: 600, fontFamily: "inherit",
               border: "none", borderBottom: activeTab === t ? "3px solid var(--blue2)" : "3px solid transparent",
-              borderRadius: 12, background: activeTab === t ? "linear-gradient(135deg,var(--blue),var(--blue2))" : "none", color: activeTab === t ? "white" : "var(--muted)",
+              borderRadius: 12, background: activeTab === t ? "var(--gradient-primary)" : "none", color: activeTab === t ? "white" : "var(--muted)",
               cursor: "pointer", transition: "all .2s", marginBottom: -2,
               display: "flex", alignItems: "center", gap: 7,
             }}
@@ -1010,7 +1011,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                   </div>
                 </div>
                 <div className="invoice-heading-controls">
-                  <span style={{ color: "var(--muted)", fontSize: 12 }}>Invoice: <strong style={{ color: "var(--blue)", fontFamily: "monospace" }}>#{invNumber}</strong></span>
+                  <span style={{ color: "var(--muted)", fontSize: 12 }}>Invoice: <strong style={{ color: "var(--blue)", fontFamily: "inherit" }}>#{invNumber}</strong></span>
                   <input className="invoice-heading-date" aria-label="Invoice date" type="date" value={invDate} onChange={e => setInvDate(e.target.value)} />
                   <button className="new-invoice-button" onClick={resetForm} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--blue)", border: "1.5px solid var(--bg3)", display: "flex", alignItems: "center", gap: 6 }}>
                     <i aria-hidden="true" className="fa-solid fa-rotate-left"></i> New Invoice
@@ -1021,7 +1022,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
               {/* ── Regular: customer name dropdown ── */}
               {formType === "regular" && (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     {/* Customer name dropdown */}
                     <div style={{ gridColumn: "span 2" }}>
                       <label style={lbl}>Customer Name *</label>
@@ -1036,7 +1037,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                           <div>
                             <div style={{ fontWeight: 600, fontSize: 13 }}>{c.name}</div>
                             <div style={{ fontSize: 11, color: "var(--muted)", display: "flex", gap: 10, marginTop: 2 }}>
-                              <span style={{ fontFamily: "monospace", color: "var(--blue)", fontWeight: 700 }}>{c.cid}</span>
+                              <span style={{ fontFamily: "inherit", color: "var(--blue)", fontWeight: 700 }}>{c.cid}</span>
                               {c.phone && <span>{c.phone}</span>}
                             </div>
                           </div>
@@ -1047,7 +1048,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                     {/* Auto-filled readonly fields */}
                     <div>
                       <label style={lbl}>Customer ID</label>
-                      <input type="text" value={regCustomer?.cid ?? ""} readOnly placeholder="Auto-filled" style={{ ...roInp, fontFamily: "monospace", fontWeight: 700, color: regCustomer ? "var(--blue)" : "var(--muted)" }} />
+                      <input type="text" value={regCustomer?.cid ?? ""} readOnly placeholder="Auto-filled" style={{ ...roInp, fontFamily: "inherit", fontWeight: 700, color: regCustomer ? "var(--blue)" : "var(--muted)" }} />
                     </div>
                     <div>
                       <label style={lbl}>Phone</label>
@@ -1064,7 +1065,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
               {/* ── Walk-in: name + phone (both optional) ── */}
               {formType === "walk" && (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <div>
                       <label style={lbl}>Customer Name <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "var(--muted)" }}>(Optional)</span></label>
                       <input type="text" placeholder="Walk-in Customer" value={walkName} onChange={e => setWalkName(e.target.value)} style={inp} />
@@ -1233,7 +1234,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                       </span>
                     </div>
                   )}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <div>
                       <label style={lbl}>Amount Paid (Rs)</label>
                       <input type="number" min={0} value={amountPaid} onChange={e => setAmountPaid(Number(e.target.value))} style={inp} />
@@ -1305,12 +1306,12 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                           return (
                             <tr key={inv.id} style={{ borderBottom: i < pageInvoices.length - 1 ? "1px solid var(--bg2)" : "none" }}>
                               <td style={{ padding: "10px 12px" }}>
-                                <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 5, whiteSpace: "nowrap", display: "inline-block" }}>{inv.invNumber}</span>
+                                <span style={{ fontFamily: "inherit", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 5, whiteSpace: "nowrap", display: "inline-block" }}>{inv.invNumber}</span>
                               </td>
                               <td style={{ padding: "10px 12px" }}>
                                 <div style={{ fontWeight: 600, fontSize: 13 }}>{inv.customerName}</div>
                                 {inv.accountHeader && (
-                                  <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2, fontFamily: "monospace" }}>
+                                  <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2, fontFamily: "inherit" }}>
                                     {inv.accountHeader.prefix}-HEAD
                                   </div>
                                 )}
@@ -1326,41 +1327,41 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                               </td>
                               <td style={{ padding: "10px 12px", textAlign: "center" }}>
                                 <div style={{ display: "inline-flex", alignItems: "center", gap: 5, flexWrap: "wrap", justifyContent: "center" }}>
-                                  <button
+                                  <button data-ui-size="compact" data-ui-action="primary"
                                     onClick={() => setViewInvoice(inv)}
                                     title="View Invoice"
-                                    style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(16,87,160,.3)" }}
+                                    style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "var(--gradient-primary)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(16,87,160,.3)" }}
                                   >
                                     <i aria-hidden="true" className="fa-solid fa-eye" style={{ fontSize: 9 }}></i> View
                                   </button>
-                                  <button
+                                  <button data-ui-size="compact" data-ui-action="success"
                                     onClick={() => openWhatsApp(inv)}
                                     title="Send via WhatsApp"
-                                    style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#25d366,#128c7e)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(37,211,102,.3)" }}
+                                    style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "var(--gradient-success)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(37,211,102,.3)" }}
                                   >
                                     <i aria-hidden="true" className="fa-brands fa-whatsapp" style={{ fontSize: 11 }}></i> WA
                                   </button>
-                                  <button
+                                  <button data-ui-size="compact" data-ui-action="danger"
                                     onClick={() => deleteInvoice(inv)}
                                     title="Delete Invoice"
-                                    style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#e03c3c,#c02020)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(224,60,60,.3)" }}
+                                    style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "var(--gradient-danger)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(224,60,60,.3)" }}
                                   >
                                     <i aria-hidden="true" className="fa-solid fa-trash" style={{ fontSize: 9 }}></i> Delete
                                   </button>
                                   {inv.status === "pending" && (
-                                    <button
+                                    <button data-ui-size="compact" data-ui-action="primary"
                                       onClick={() => openEditModal(inv)}
                                       title="Edit Invoice"
-                                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(245,158,11,.3)" }}
+                                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "var(--gradient-primary)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(245,158,11,.3)" }}
                                     >
                                       <i aria-hidden="true" className="fa-solid fa-pen" style={{ fontSize: 9 }}></i> Edit
                                     </button>
                                   )}
                                   {inv.status !== "paid" && (
-                                    <button
+                                    <button data-ui-size="compact" data-ui-action="primary"
                                       onClick={() => printExistingInvoice(inv)}
                                       title="Mark as Paid & Print"
-                                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(34,168,110,.3)" }}
+                                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "var(--gradient-primary)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(34,168,110,.3)" }}
                                     >
                                       <i aria-hidden="true" className="fa-solid fa-print" style={{ fontSize: 9 }}></i> Print
                                     </button>
@@ -1466,7 +1467,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", marginBottom: 16, display: "flex", alignItems: "center", gap: 9 }}>
                 <i aria-hidden="true" className="fa-solid fa-filter" style={{ color: "var(--blue2)", fontSize: 14 }}></i> Filters
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 12, alignItems: "flex-end" }}>
+              <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: 12, alignItems: "flex-end" }}>
                 <div>
                   <label style={lbl}>From Date</label>
                   <input type="date" value={rptFrom} onChange={e => setRptFrom(e.target.value)} style={inp} />
@@ -1488,7 +1489,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                   <input type="text" placeholder="Name or ID..." value={rptCustomer} onChange={e => setRptCustomer(e.target.value)} style={inp} />
                 </div>
                 <div>
-                  <button
+                  <button data-ui-action="secondary"
                     onClick={() => { setRptFrom(today()); setRptTo(today()); setRptType(""); setRptCustomer(""); }}
                     style={{ padding: "9px 16px", border: "1.5px solid var(--bg2)", borderRadius: "var(--r2)", background: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--ink3)", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
                   >
@@ -1499,7 +1500,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
             </div>
 
             {/* Summary Stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }}>
+            <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }}>
               {statCard("fa-file-invoice", "Total Invoices", filtered.length.toString(), "var(--blue)", "var(--blue5)")}
               {statCard("fa-circle-dollar-to-slot", "Total Income", `Rs ${totalIncome.toLocaleString()}`, "#7c3aed", "#f3eeff")}
               {statCard("fa-arrow-down-to-bracket", "Received", `Rs ${totalReceived.toLocaleString()}`, "var(--green)", "#e6f9f2")}
@@ -1516,9 +1517,9 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 12, fontWeight: 500, color: "var(--muted)" }}>{filtered.length} invoice{filtered.length !== 1 ? "s" : ""}</span>
-                  <button
+                  <button data-ui-action="primary"
                     onClick={() => downloadReportPDF({ filtered, totalIncome, totalReceived, totalDue, totalRefunded, refundedCount, rptFrom, rptTo, rptType, rptCustomer })}
-                    style={{ padding: "7px 14px", border: "none", borderRadius: "var(--r2)", background: "linear-gradient(135deg,#7c3aed,#6d28d9)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "white", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(124,58,237,.3)" }}
+                    style={{ padding: "7px 14px", border: "none", borderRadius: "var(--r2)", background: "var(--gradient-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "white", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(124,58,237,.3)" }}
                   >
                     <i aria-hidden="true" className="fa-solid fa-file-pdf" style={{ fontSize: 11 }}></i> Download PDF
                   </button>
@@ -1561,7 +1562,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                         return (
                           <tr key={inv.id} style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--bg2)" : "none" }}>
                             <td style={{ padding: "10px 12px" }}>
-                              <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 5, whiteSpace: "nowrap", display: "inline-block" }}>{inv.invNumber}</span>
+                              <span style={{ fontFamily: "inherit", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 5, whiteSpace: "nowrap", display: "inline-block" }}>{inv.invNumber}</span>
                             </td>
                             <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 600 }}>{inv.customerName}</td>
                             <td style={{ padding: "10px 12px", fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>{fmtDate(inv.invoiceDate.split("T")[0])}</td>
@@ -1607,10 +1608,10 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
             onClick={e => { if (e.target === e.currentTarget) setEditInvoice(null); }}>
             <div style={{ background: "white", borderRadius: 18, width: 680, maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", boxShadow: "var(--shm)", animation: "slideUp .3s cubic-bezier(.16,1,.3,1)" }}>
               {/* Header */}
-              <div style={{ padding: "18px 24px", borderBottom: "1.5px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#92400e,#d97706)", borderRadius: "18px 18px 0 0", position: "sticky", top: 0, zIndex: 1 }}>
+              <div style={{ padding: "18px 24px", borderBottom: "1.5px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--gradient-primary)", borderRadius: "18px 18px 0 0", position: "sticky", top: 0, zIndex: 1 }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: "white", display: "flex", alignItems: "center", gap: 10 }}>
                   <i aria-hidden="true" className="fa-solid fa-pen-to-square" style={{ color: "#fde68a" }}></i>
-                  Edit Invoice <span style={{ fontFamily: "monospace", fontSize: 14, opacity: .9 }}>#{editInvoice.invNumber}</span>
+                  Edit Invoice <span style={{ fontFamily: "inherit", fontSize: 14, opacity: .9 }}>#{editInvoice.invNumber}</span>
                 </div>
                 <button onClick={() => setEditInvoice(null)} style={{ background: "none", border: "none", fontSize: 16, color: "rgba(255,255,255,.6)", cursor: "pointer", width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <i aria-hidden="true" className="fa-solid fa-xmark"></i>
@@ -1621,7 +1622,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
 
                 {/* Customer (walk-in editable, regular read-only) */}
                 {editInvoice.type === "walk" ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <div>
                       <label style={lbl}>Customer Name</label>
                       <input type="text" value={editWalkName} onChange={e => setEditWalkName(e.target.value)} placeholder="Walk-in Customer" style={inp} />
@@ -1639,7 +1640,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                 )}
 
                 {/* Dates */}
-                <div style={{ display: "grid", gridTemplateColumns: editInvoice.type === "regular" ? "1fr 1fr" : "1fr", gap: 12 }}>
+                <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: editInvoice.type === "regular" ? "1fr 1fr" : "1fr", gap: 12 }}>
                   <div>
                     <label style={lbl}>Invoice Date</label>
                     <input type="date" value={editInvDate} onChange={e => setEditInvDate(e.target.value)} style={inp} />
@@ -1791,7 +1792,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                   <button onClick={() => setEditInvoice(null)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", background: "transparent", color: "var(--ink3)", border: "1.5px solid var(--bg3)", display: "flex", alignItems: "center", gap: 7 }}>
                     <i aria-hidden="true" className="fa-solid fa-xmark"></i> Cancel
                   </button>
-                  <button onClick={saveEditInvoice} disabled={editSaving} style={{ padding: "11px 28px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: editSaving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "white", border: "none", borderRadius: 24, opacity: editSaving ? .6 : 1, boxShadow: "0 4px 16px rgba(245,158,11,.3)" }}>
+                  <button data-ui-action="primary" onClick={saveEditInvoice} disabled={editSaving} style={{ padding: "11px 28px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: editSaving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, background: "var(--gradient-primary)", color: "white", border: "none", borderRadius: 24, opacity: editSaving ? .6 : 1, boxShadow: "0 4px 16px rgba(245,158,11,.3)" }}>
                     {editSaving ? <><i aria-hidden="true" className="fa-solid fa-spinner fa-spin"></i> Saving…</> : <><i aria-hidden="true" className="fa-solid fa-floppy-disk"></i> Update Invoice</>}
                   </button>
                 </div>
@@ -1810,7 +1811,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
             onClick={e => { if (e.target === e.currentTarget) setViewInvoice(null); }}>
             <div style={{ background: "white", borderRadius: 18, width: 620, maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", boxShadow: "var(--shm)", animation: "slideUp .3s cubic-bezier(.16,1,.3,1)" }}>
               {/* Header */}
-              <div style={{ padding: "18px 24px", borderBottom: "1.5px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,var(--ink),#0e3460)", borderRadius: "18px 18px 0 0", position: "sticky", top: 0 }}>
+              <div style={{ padding: "18px 24px", borderBottom: "1.5px solid var(--bg2)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--gradient-primary)", borderRadius: "18px 18px 0 0", position: "sticky", top: 0 }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: "white", display: "flex", alignItems: "center", gap: 10 }}>
                   <i aria-hidden="true" className="fa-solid fa-file-invoice" style={{ color: "var(--gold)" }}></i> Invoice Details
                 </div>
@@ -1821,10 +1822,10 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
               {/* Body */}
               <div style={{ padding: 24 }}>
                 {/* Invoice meta */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+                <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
                   <div style={{ background: "var(--bg)", borderRadius: 10, padding: "12px 16px" }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 4 }}>Invoice #</div>
-                    <div style={{ fontFamily: "monospace", fontWeight: 800, fontSize: 15, color: "var(--blue)" }}>{inv.invNumber}</div>
+                    <div style={{ fontFamily: "inherit", fontWeight: 800, fontSize: 15, color: "var(--blue)" }}>{inv.invNumber}</div>
                   </div>
                   <div style={{ background: "var(--bg)", borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div>
@@ -1903,10 +1904,10 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                     <i aria-hidden="true" className="fa-solid fa-xmark"></i> Close
                   </button>
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    <button onClick={() => openWhatsApp(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#25d366,#128c7e)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(37,211,102,.3)" }}>
+                    <button data-ui-action="success" onClick={() => openWhatsApp(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-success)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(37,211,102,.3)" }}>
                       <i aria-hidden="true" className="fa-brands fa-whatsapp" style={{ fontSize: 15 }}></i> Send via WhatsApp
                     </button>
-                    <button onClick={() => printInvoiceCopy(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
+                    <button data-ui-action="primary" onClick={() => printInvoiceCopy(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-primary)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
                       <i aria-hidden="true" className="fa-solid fa-print"></i> Print Invoice
                     </button>
                   </div>

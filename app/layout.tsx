@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import "./globals.css";
+import "./theme.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -14,15 +15,21 @@ export const metadata: Metadata = {
   description: "Tailor Management System",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={poppins.variable} style={{ backgroundColor: "#f0f4fb" }}>
+    <html lang="en" className={poppins.variable}>
       <head>
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         />
-        <script dangerouslySetInnerHTML={{ __html: `
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
           document.addEventListener('wheel', function(e) {
             if (document.activeElement && document.activeElement.type === 'number') {
               document.activeElement.blur();
@@ -34,9 +41,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               e.preventDefault();
             }
           });
-        ` }} />
+        `,
+          }}
+        />
       </head>
-      <body style={{ backgroundColor: "#f0f4fb", fontFamily: "var(--font-poppins), 'Poppins', sans-serif", margin: 0 }}>
+      <body>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

@@ -116,6 +116,7 @@ export default function Home() {
       />
       <main
         className="workspace"
+        data-page={activePage ?? "access"}
         style={{
           marginLeft: "var(--sw)",
           marginTop: "var(--hh)",
@@ -162,6 +163,7 @@ export default function Home() {
         {activePage === "reports" && <ReportsPage />}
       </main>
       <footer
+        className="app-footer"
         style={{
           position: "fixed",
           bottom: 0,

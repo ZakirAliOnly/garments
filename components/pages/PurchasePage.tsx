@@ -635,7 +635,7 @@ export default function PurchasePage() {
   }
 
   const btnPrimary: React.CSSProperties = {
-    padding: "9px 18px", background: "linear-gradient(135deg,var(--blue),var(--blue2))",
+    padding: "9px 18px", background: "var(--gradient-primary)",
     color: "white", border: "none", borderRadius: "var(--r2)", cursor: "pointer",
     fontSize: 13, fontWeight: 600, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 7,
   };
@@ -759,7 +759,7 @@ export default function PurchasePage() {
                 <i className="fa-solid fa-address-book" style={{ color: "var(--blue)" }} />
                 Supplier Ledger
               </div>
-              <button style={btnSecondary} onClick={() => { setSupplierModal(true); setError(""); setSupplierForm(INIT_SUPPLIER); }}>
+              <button data-ui-action="secondary" style={btnSecondary} onClick={() => { setSupplierModal(true); setError(""); setSupplierForm(INIT_SUPPLIER); }}>
                 <i className="fa-solid fa-user-plus" /> Add Supplier
               </button>
             </div>
@@ -784,7 +784,7 @@ export default function PurchasePage() {
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--bg)"}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "white"}>
                         <td style={td}>
-                          <span style={{ fontFamily: "monospace", fontSize: 12, background: "var(--bg)", padding: "3px 8px", borderRadius: 6, fontWeight: 600 }}>
+                          <span style={{ fontFamily: "inherit", fontSize: 12, background: "var(--bg)", padding: "3px 8px", borderRadius: 6, fontWeight: 600 }}>
                             {s.supplierId}
                           </span>
                         </td>
@@ -801,7 +801,7 @@ export default function PurchasePage() {
                         </td>
                         <td style={td}>
                           <div style={{ display: "flex", gap: 4 }}>
-                            <button title="New PO" style={actionBtn("blue")} onClick={() => {
+                            <button data-ui-action="icon" title="New PO" style={actionBtn("blue")} onClick={() => {
                               setPoForm({ ...INIT_PO, supplierId: s.id });
                               setPoItems([makeItem()]);
                               setError("");
@@ -809,7 +809,7 @@ export default function PurchasePage() {
                             }}>
                               <i className="fa-solid fa-file-invoice" />
                             </button>
-                            <button title="Edit" style={actionBtn("gray")} onClick={() => openEditSupplier(s)}>
+                            <button data-ui-action="icon" title="Edit" style={actionBtn("gray")} onClick={() => openEditSupplier(s)}>
                               <i className="fa-solid fa-pen" />
                             </button>
                           </div>
@@ -837,7 +837,7 @@ export default function PurchasePage() {
                   <option value="partial">Partial</option>
                   <option value="paid">Paid</option>
                 </select>
-                <button style={btnPrimary} onClick={() => { setPoModal(true); setError(""); setPoForm(INIT_PO); setPoItems([makeItem()]); }}>
+                <button data-ui-action="primary" style={btnPrimary} onClick={() => { setPoModal(true); setError(""); setPoForm(INIT_PO); setPoItems([makeItem()]); }}>
                   <i className="fa-solid fa-plus" /> New Purchase Order
                 </button>
               </div>
@@ -864,11 +864,11 @@ export default function PurchasePage() {
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "white"}>
                         <td style={td}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                            <span style={{ fontFamily: "monospace", fontSize: 12, background: "var(--bg)", padding: "3px 8px", borderRadius: 6, fontWeight: 600 }}>
+                            <span style={{ fontFamily: "inherit", fontSize: 12, background: "var(--bg)", padding: "3px 8px", borderRadius: 6, fontWeight: 600 }}>
                               {p.poNumber}
                             </span>
                             {batchMap[p.id] && (
-                              <span style={{ fontFamily: "monospace", fontSize: 10, background: "#f5f3ff", color: "#7c3aed", padding: "2px 7px", borderRadius: 5, fontWeight: 700, border: "1px solid #ddd6fe", display: "inline-block" }}>
+                              <span style={{ fontFamily: "inherit", fontSize: 10, background: "#f5f3ff", color: "#7c3aed", padding: "2px 7px", borderRadius: 5, fontWeight: 700, border: "1px solid #ddd6fe", display: "inline-block" }}>
                                 <i className="fa-solid fa-layer-group" style={{ fontSize: 8, marginRight: 4 }}></i>
                                 {batchMap[p.id]}
                               </span>
@@ -890,17 +890,17 @@ export default function PurchasePage() {
                         <td style={td}>{statusBadge(p.status)}</td>
                         <td style={td}>
                           <div style={{ display: "flex", gap: 4 }}>
-                            <button title="View" style={actionBtn("blue")} onClick={() => { setViewPo(p); setViewModal(true); }}>
+                            <button data-ui-action="icon" title="View" style={actionBtn("blue")} onClick={() => { setViewPo(p); setViewModal(true); }}>
                               <i className="fa-solid fa-eye" />
                             </button>
-                            <button title="Print PO" style={actionBtn("gray")} onClick={() => handlePrintPo(p)} disabled={printingPo}>
+                            <button data-ui-action="icon" title="Print PO" style={actionBtn("gray")} onClick={() => handlePrintPo(p)} disabled={printingPo}>
                               <i className="fa-solid fa-print" />
                             </button>
-                            <button title="Download PDF" style={actionBtn("blue")} onClick={() => handleDownloadPo(p)} disabled={downloadingPo}>
+                            <button data-ui-action="icon" title="Download PDF" style={actionBtn("blue")} onClick={() => handleDownloadPo(p)} disabled={downloadingPo}>
                               <i className="fa-solid fa-download" />
                             </button>
                             {p.status !== "paid" && (
-                              <button title="Record Payment" style={actionBtn("green")} onClick={() => {
+                              <button data-ui-action="icon" title="Record Payment" style={actionBtn("green")} onClick={() => {
                                 setPayTarget(p); setPayAmount(""); setError(""); setPayModal(true);
                               }}>
                                 <i className="fa-solid fa-money-bill-wave" />
@@ -925,7 +925,7 @@ export default function PurchasePage() {
           <span>Supplier ID will be auto-assigned on save.</span>
         </div>
         {error && <div style={{ background: "#fff0f0", color: "var(--red)", padding: "9px 13px", borderRadius: "var(--r2)", marginBottom: 12, fontSize: 12, fontWeight: 500 }}>{error}</div>}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ gridColumn: "span 2" }}>
             <label style={lbl}>Supplier / Company Name *</label>
             <input style={inp} placeholder="e.g. Baloch Fabric House" value={supplierForm.name} onChange={e => setSupplierForm(f => ({ ...f, name: e.target.value }))} />
@@ -952,8 +952,8 @@ export default function PurchasePage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-          <button style={btnSecondary} onClick={() => setSupplierModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>
-          <button style={btnPrimary} onClick={handleAddSupplier} disabled={saving}>
+          <button data-ui-action="secondary" style={btnSecondary} onClick={() => setSupplierModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>
+          <button data-ui-action="primary" style={btnPrimary} onClick={handleAddSupplier} disabled={saving}>
             <i className="fa-solid fa-floppy-disk" /> {saving ? "Saving…" : "Save Supplier"}
           </button>
         </div>
@@ -962,7 +962,7 @@ export default function PurchasePage() {
       {/* ══════════ EDIT SUPPLIER MODAL ══════════ */}
       <Modal open={editSupplierModal} onClose={() => setEditSupplierModal(false)} title={`Edit Supplier — ${editSupplier?.supplierId}`} icon="fa-user-tie">
         {error && <div style={{ background: "#fff0f0", color: "var(--red)", padding: "9px 13px", borderRadius: "var(--r2)", marginBottom: 12, fontSize: 12, fontWeight: 500 }}>{error}</div>}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ gridColumn: "span 2" }}>
             <label style={lbl}>Supplier / Company Name *</label>
             <input style={inp} value={editSupForm.name} onChange={e => setEditSupForm(f => ({ ...f, name: e.target.value }))} />
@@ -989,8 +989,8 @@ export default function PurchasePage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-          <button style={btnSecondary} onClick={() => setEditSupplierModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>
-          <button style={btnPrimary} onClick={handleEditSupplier} disabled={saving}>
+          <button data-ui-action="secondary" style={btnSecondary} onClick={() => setEditSupplierModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>
+          <button data-ui-action="primary" style={btnPrimary} onClick={handleEditSupplier} disabled={saving}>
             <i className="fa-solid fa-floppy-disk" /> {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
@@ -1003,7 +1003,7 @@ export default function PurchasePage() {
           <span>PO number will be auto-assigned on save.</span>
         </div>
         {error && <div style={{ background: "#fff0f0", color: "var(--red)", padding: "9px 13px", borderRadius: "var(--r2)", marginBottom: 12, fontSize: 12, fontWeight: 500 }}>{error}</div>}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
           <div>
             <label style={lbl}>Supplier *</label>
             <select style={sel} value={poForm.supplierId} onChange={e => setPoForm(f => ({ ...f, supplierId: e.target.value }))}>
@@ -1030,7 +1030,7 @@ export default function PurchasePage() {
             <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink3)", display: "flex", alignItems: "center", gap: 6 }}>
               <i className="fa-solid fa-boxes-stacked" style={{ color: "var(--blue)" }} /> Item Details
             </div>
-            <button type="button" style={{ ...btnPrimary, padding: "5px 12px", fontSize: 11 }}
+            <button data-ui-action="primary" type="button" style={{ ...btnPrimary, padding: "5px 12px", fontSize: 11 }}
               onClick={() => setPoItems(items => [...items, makeItem()])}>
               <i className="fa-solid fa-plus" /> Add Item
             </button>
@@ -1059,7 +1059,7 @@ export default function PurchasePage() {
                         style={{
                           padding: "3px 10px", borderRadius: 16, border: "none", cursor: "pointer",
                           fontSize: 10, fontWeight: 600, fontFamily: "inherit", transition: "all .15s",
-                          background: item.mode === mode ? "linear-gradient(135deg,var(--blue),var(--blue2))" : "transparent",
+                          background: item.mode === mode ? "var(--gradient-primary)" : "transparent",
                           color: item.mode === mode ? "white" : "var(--muted)",
                         }}
                       >
@@ -1069,7 +1069,7 @@ export default function PurchasePage() {
                     ))}
                   </div>
                   {poItems.length > 1 && (
-                    <button type="button" onClick={() => removeItem(item._id)} style={{
+                    <button data-ui-action="danger" type="button" onClick={() => removeItem(item._id)} style={{
                       width: 26, height: 26, border: "none", borderRadius: 6, cursor: "pointer",
                       background: "#fff0f0", color: "var(--red)", fontSize: 12,
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -1107,7 +1107,7 @@ export default function PurchasePage() {
               )}
 
               {/* Fields */}
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10 }}>
+              <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10 }}>
                 <div>
                   <label style={lbl}>Item Name *</label>
                   {item.mode === "free" ? (
@@ -1148,7 +1148,7 @@ export default function PurchasePage() {
         </div>
 
         {/* Payment */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
           <div>
             <label style={lbl}>Advance Paid (Rs)</label>
             <input type="number" style={inp} placeholder="0" value={poForm.advancePaid} min="0" onChange={e => setPoForm(f => ({ ...f, advancePaid: e.target.value }))} />
@@ -1164,8 +1164,8 @@ export default function PurchasePage() {
         </div>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button style={btnSecondary} onClick={() => { setPoModal(false); setPoItems([makeItem()]); }}><i className="fa-solid fa-xmark" /> Cancel</button>
-          <button style={btnPrimary} onClick={handleAddPo} disabled={saving}>
+          <button data-ui-action="secondary" style={btnSecondary} onClick={() => { setPoModal(false); setPoItems([makeItem()]); }}><i className="fa-solid fa-xmark" /> Cancel</button>
+          <button data-ui-action="primary" style={btnPrimary} onClick={handleAddPo} disabled={saving}>
             <i className="fa-solid fa-floppy-disk" /> {saving ? "Saving…" : "Save Purchase Order"}
           </button>
         </div>
@@ -1179,12 +1179,12 @@ export default function PurchasePage() {
               <i className="fa-solid fa-layer-group" style={{ color: "#7c3aed", fontSize: 15 }}></i>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: ".4px" }}>FIFO Batch Created</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "#5b21b6", fontFamily: "monospace" }}>{batchMap[viewPo.id]}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#5b21b6", fontFamily: "inherit" }}>{batchMap[viewPo.id]}</div>
               </div>
               <div style={{ marginLeft: "auto", fontSize: 11, color: "#7c3aed" }}>Stock will be consumed from this batch first (oldest → newest)</div>
             </div>
           )}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+          <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
             {[
               { label: "Supplier", main: viewPo.supplier?.name, sub: viewPo.supplier?.supplierId },
               { label: "PO Date", main: new Date(viewPo.dateTime).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }), sub: `Status: ${viewPo.status}` },
@@ -1231,7 +1231,7 @@ export default function PurchasePage() {
 
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             {viewPo.status !== "paid" && (
-              <button style={{ ...btnPrimary, background: "linear-gradient(135deg,var(--green),#1a8f5d)" }} onClick={() => {
+              <button data-ui-action="success" style={{ ...btnPrimary, background: "var(--gradient-success)" }} onClick={() => {
                 setViewModal(false);
                 setPayTarget(viewPo);
                 setPayAmount("");
@@ -1241,10 +1241,10 @@ export default function PurchasePage() {
                 <i className="fa-solid fa-money-bill-wave" /> Record Payment
               </button>
             )}
-            <button style={btnPrimary} onClick={() => handlePrintPo(viewPo)} disabled={printingPo}>
+            <button data-ui-action="primary" style={btnPrimary} onClick={() => handlePrintPo(viewPo)} disabled={printingPo}>
               <i className="fa-solid fa-print" /> {printingPo ? "Printing…" : "Print PO"}
             </button>
-            <button style={btnSecondary} onClick={() => setViewModal(false)}><i className="fa-solid fa-xmark" /> Close</button>
+            <button data-ui-action="secondary" style={btnSecondary} onClick={() => setViewModal(false)}><i className="fa-solid fa-xmark" /> Close</button>
           </div>
         </Modal>
       )}
@@ -1273,8 +1273,8 @@ export default function PurchasePage() {
             <label style={lbl}>Payment method</label><PaymentMethodSelect value={payMethod} onChange={setPayMethod} style={sel}/>
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button style={btnSecondary} onClick={() => setPayModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>
-            <button style={{ ...btnPrimary, background: "linear-gradient(135deg,var(--green),#1a8f5d)" }} onClick={handleRecordPayment} disabled={saving}>
+            <button data-ui-action="secondary" style={btnSecondary} onClick={() => setPayModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>
+            <button data-ui-action="success" style={{ ...btnPrimary, background: "var(--gradient-success)" }} onClick={handleRecordPayment} disabled={saving}>
               <i className="fa-solid fa-check" /> {saving ? "Saving…" : "Record Payment"}
             </button>
           </div>

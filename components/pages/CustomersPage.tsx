@@ -140,9 +140,9 @@ export default function CustomersPage() {
       {/* Ledger Summary Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
         {[
-          { label: "Total Receivable (DR)", value: `Rs ${totalReceivable.toLocaleString()}`, sub: "Customers owe the shop", bg: "linear-gradient(135deg,#b03030,#e05050)", icon: "fa-arrow-trend-up" },
-          { label: "Total Payable (CR)", value: `Rs ${totalPayable.toLocaleString()}`, sub: "Advance payments held", bg: "linear-gradient(135deg,#1a8f5a,#22a86e)", icon: "fa-arrow-trend-down" },
-          { label: "Net Receivable", value: `Rs ${Math.abs(netBalance).toLocaleString()}`, sub: netBalance >= 0 ? "Net owed to shop" : "Net advance balance", bg: "linear-gradient(135deg,var(--ink3),var(--blue2))", icon: "fa-scale-balanced" },
+          { label: "Total Receivable (DR)", value: `Rs ${totalReceivable.toLocaleString()}`, sub: "Customers owe the shop", bg: "var(--gradient-danger)", icon: "fa-arrow-trend-up" },
+          { label: "Total Payable (CR)", value: `Rs ${totalPayable.toLocaleString()}`, sub: "Advance payments held", bg: "var(--gradient-primary)", icon: "fa-arrow-trend-down" },
+          { label: "Net Receivable", value: `Rs ${Math.abs(netBalance).toLocaleString()}`, sub: netBalance >= 0 ? "Net owed to shop" : "Net advance balance", bg: "var(--gradient-primary)", icon: "fa-scale-balanced" },
         ].map((s) => (
           <div key={s.label} style={{ background: loading ? "var(--bg2)" : s.bg, color: "white", borderRadius: "var(--r)", padding: 20, position: "relative", overflow: "hidden", transition: "background var(--tr)" }}>
             <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,.07)" }}></div>
@@ -189,9 +189,9 @@ export default function CustomersPage() {
               </button>
             ))}
 
-            <button
+            <button data-ui-action="primary"
               onClick={openModal}
-              style={{ padding: "8px 16px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", boxShadow: "0 4px 16px rgba(16,87,160,.3)" }}
+              style={{ padding: "8px 16px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-primary)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(16,87,160,.3)" }}
             >
               <i className="fa-solid fa-user-plus"></i> Add Customer
             </button>
@@ -227,7 +227,7 @@ export default function CustomersPage() {
                   return (
                     <tr key={c.id} style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--bg2)" : "none" }}>
                       <td style={{ padding: "11px 14px" }}>
-                        <span style={{ display: "inline-block", background: "var(--ink)", color: "var(--blue4)", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, fontFamily: "monospace", letterSpacing: ".6px" }}>{c.cid}</span>
+                        <span style={{ display: "inline-block", background: "var(--ink)", color: "var(--blue4)", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, fontFamily: "inherit", letterSpacing: ".6px" }}>{c.cid}</span>
                       </td>
                       <td style={{ padding: "11px 14px", fontWeight: 600, fontSize: 13 }}>{c.name}</td>
                       <td style={{ padding: "11px 14px", fontSize: 13 }}>{c.phone || <span style={{ color: "var(--muted)", fontSize: 11 }}>—</span>}</td>
@@ -239,9 +239,9 @@ export default function CustomersPage() {
                       </td>
                       <td style={{ padding: "11px 14px" }}>
                         <div style={{ display: "flex", gap: 4 }}>
-                          <button title="View" style={actionBtn("var(--blue5)", "var(--blue)")}><i className="fa-solid fa-eye"></i></button>
-                          <button title="Edit" style={actionBtn("#fff8e6", "var(--gold)")}><i className="fa-solid fa-pen"></i></button>
-                          <button title="Delete" style={actionBtn("#fff0f0", "var(--red)")} onClick={() => handleDelete(c.id, c.name)}><i className="fa-solid fa-trash"></i></button>
+                          <button data-ui-action="icon" title="View" style={actionBtn("var(--blue5)", "var(--blue)")}><i className="fa-solid fa-eye"></i></button>
+                          <button data-ui-action="icon" title="Edit" style={actionBtn("#fff8e6", "var(--gold)")}><i className="fa-solid fa-pen"></i></button>
+                          <button data-ui-action="icon" title="Delete" style={actionBtn("#fff0f0", "var(--red)")} onClick={() => handleDelete(c.id, c.name)}><i className="fa-solid fa-trash"></i></button>
                         </div>
                       </td>
                     </tr>
@@ -290,7 +290,7 @@ export default function CustomersPage() {
               <div style={{ background: "var(--blue5)", borderRadius: "var(--r2)", padding: "11px 15px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12, fontSize: 13, color: "var(--blue)" }}>
                 <i className="fa-solid fa-id-badge" style={{ fontSize: 16, flexShrink: 0 }}></i>
                 <span>
-                  Auto-assigned Customer ID: <strong style={{ fontFamily: "monospace", fontSize: 14 }}>{nextCid ?? "…"}</strong>
+                  Auto-assigned Customer ID: <strong style={{ fontFamily: "inherit", fontSize: 14 }}>{nextCid ?? "…"}</strong>
                 </span>
               </div>
 
@@ -425,7 +425,7 @@ export default function CustomersPage() {
               </div>
 
               <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                <button type="submit" disabled={saving} style={{ padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", opacity: saving ? .7 : 1 }}>
+                <button data-ui-action="primary" type="submit" disabled={saving} style={{ padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-primary)", color: "white", border: "none", opacity: saving ? .7 : 1 }}>
                   <i className={`fa-solid ${saving ? "fa-spinner fa-spin" : "fa-user-plus"}`}></i>
                   {saving ? "Saving..." : "Add Customer"}
                 </button>
