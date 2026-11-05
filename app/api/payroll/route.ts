@@ -1,10 +1,10 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { prisma } from "@/lib/prisma";
 import { financeError } from "@/lib/finance/core";
 import { payrollMonth, payrollTotals } from "@/lib/finance/payroll";
 import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("workers");
   if (denied) return denied;
   try {
     const month = payrollMonth(req.nextUrl.searchParams.get("month"));

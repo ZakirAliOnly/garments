@@ -17,7 +17,7 @@ const hash = `scrypt$${salt.toString("hex")}$${scryptSync(password, salt, 64).to
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL });
 await client.connect();
 await client.query(
-  `INSERT INTO "AdminUser" ("id","email","passwordHash","updatedAt") VALUES ($1,$2,$3,NOW())
+  `INSERT INTO "AdminUser" ("id","email","passwordHash","role","updatedAt") VALUES ($1,$2,$3,'admin',NOW())
    ON CONFLICT ("email") DO UPDATE SET "passwordHash" = EXCLUDED."passwordHash", "updatedAt" = NOW()`,
   [randomUUID(), email, hash],
 );

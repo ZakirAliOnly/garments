@@ -6,13 +6,13 @@ import {
   date,
   resolveMethod,
 } from "@/lib/finance/core";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/invoices — list all invoices
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("invoice");
   if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type"); // "regular" | "walk" | null (all)
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/invoices — create invoice
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("invoice");
   if (denied) return denied;
   try {
     const body = await req.json();

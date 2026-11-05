@@ -16,11 +16,11 @@ export interface Transfer {
   entryDate: string;
   notes: string | null;
 }
-export function usePaymentMethods() {
+export function usePaymentMethods(management = false) {
   return useQuery<{ methods: PaymentMethod[]; transfers: Transfer[] }>({
-    queryKey: ["payment-methods"],
+    queryKey: ["payment-methods", management ? "management" : "lookup"],
     queryFn: async () => {
-      const r = await fetch("/api/payment-methods");
+      const r = await fetch(management ? "/api/payment-methods" : "/api/lookups/payment-methods");
       if (!r.ok) throw Error("Unable to load payment methods");
       return r.json();
     },

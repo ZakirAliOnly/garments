@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import {
   financialTransaction,
   financeError,
@@ -13,7 +13,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("workers");
   if (denied) return denied;
   try {
     const { id } = await params,

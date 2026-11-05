@@ -1,9 +1,9 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("dashboard");
   if (denied) return denied;
   try {
     const now = new Date();

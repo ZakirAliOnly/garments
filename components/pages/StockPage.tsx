@@ -217,7 +217,7 @@ export default function StockPage() {
       .catch(() => setLoading(false));
   };
   const loadReport = () => {
-    fetch("/api/invoices")
+    fetch("/api/lookups/stock-sales")
       .then(r => r.json())
       .then(d => {
         setReportInvoices(Array.isArray(d) ? d : []);

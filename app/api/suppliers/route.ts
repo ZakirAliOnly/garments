@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -11,14 +11,14 @@ function nextSupplierId(suppliers: { supplierId: string }[]) {
 }
 
 export async function GET() {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("purchase");
   if (denied) return denied;
   const suppliers = await prisma.supplier.findMany({ orderBy: { createdAt: "desc" } });
   return NextResponse.json(suppliers);
 }
 
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("purchase");
   if (denied) return denied;
   try {
     const body = await req.json();

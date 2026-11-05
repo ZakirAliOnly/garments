@@ -359,7 +359,7 @@ export default function PurchasePage() {
 
   useEffect(() => {
     load();
-    fetch("/api/stock").then(r => r.ok ? r.json() : []).then(data => {
+    fetch("/api/lookups/stock?purpose=purchase").then(r => r.ok ? r.json() : []).then(data => {
       if (Array.isArray(data)) setStockItems(data);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps

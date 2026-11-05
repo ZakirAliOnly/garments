@@ -1,10 +1,10 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/refunds/lookup?invNumber=INV-0001
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("refund");
   if (denied) return denied;
   try {
     const invNumber = req.nextUrl.searchParams.get("invNumber")?.trim();

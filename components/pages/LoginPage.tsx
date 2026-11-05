@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth/client";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage({ onLogin }: { onLogin: () => void }) {
-  const [email, setEmail] = useState("admin.g@addsmint.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

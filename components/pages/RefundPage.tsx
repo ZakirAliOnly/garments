@@ -342,7 +342,7 @@ export default function RefundPage() {
 
   useEffect(() => {
     loadRequests();
-    fetch("/api/stock?lean=1")
+    fetch("/api/lookups/stock?purpose=refund")
       .then((r) => r.json())
       .then((d) => setStockItems(Array.isArray(d) ? d : []))
       .catch(() => setStockItems([]));

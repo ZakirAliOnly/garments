@@ -1,10 +1,10 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireModuleAccess } from "@/lib/auth/require-admin";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/reports/customers
 export async function GET(_req: NextRequest) {
-  const denied = await requireAdmin();
+  const denied = await requireModuleAccess("reports");
   if (denied) return denied;
   try {
     const customers = await prisma.customer.findMany({
