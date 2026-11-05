@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Page } from "@/types";
 
 const titles: Record<Page, [string, string]> = {
+  activity: ["Activity Log", "wave-square"],
   "user-management": ["User Management", "user-shield"],
   dashboard: ["Dashboard", "house"],
   stock: ["Stock / Inventory", "boxes-stacked"],

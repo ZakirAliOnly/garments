@@ -1,3 +1,4 @@
+import { activityActor, activityTransaction } from "@/lib/activity-context";
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -50,10 +51,17 @@ export async function financialTransaction<T>(
 ): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await prisma.$transaction(fn, {
-        isolationLevel: "Serializable",
-        timeout: 25000,
-      });
+      const actor = await activityActor();
+      return await prisma.$transaction(
+        async (tx) => {
+          await tx.$executeRaw`SELECT set_config('garments.actor', ${actor}, true)`;
+          return activityTransaction.run(true, () => fn(tx));
+        },
+        {
+          isolationLevel: "Serializable",
+          timeout: 25000,
+        },
+      );
     } catch (error) {
       if (isTransactionConflict(error) && attempt < 3) continue;
       throw error;
