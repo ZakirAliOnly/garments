@@ -10,6 +10,8 @@ import RefundPage from "@/components/pages/RefundPage";
 import CashbookPage from "@/components/pages/CashbookPage";
 import PurchasePage from "@/components/pages/PurchasePage";
 import SettingsPage from "@/components/pages/SettingsPage";
+import WorkersPage from "@/components/pages/WorkersPage";
+import PaymentMethodsPage from "@/components/pages/PaymentMethodsPage";
 import ReportsPage from "@/components/pages/ReportsPage";
 import { authClient } from "@/lib/auth/client";
 import type { Page } from "@/types";
@@ -54,6 +56,8 @@ export default function Home() {
         {activePage === "cashbook" && <CashbookPage />}
         {activePage === "purchase" && <PurchasePage />}
         {activePage === "settings" && <SettingsPage />}
+        {activePage === "workers" && <WorkersPage />}
+        {activePage === "payment-methods" && <PaymentMethodsPage />}
         {activePage === "reports" && <ReportsPage />}
       </main>
       <footer style={{

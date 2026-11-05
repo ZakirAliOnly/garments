@@ -1,4 +1,5 @@
 "use client";
+import PaymentMethodSelect from "@/components/finance/PaymentMethodSelect";
 import { useEffect, useState } from "react";
 
 interface Customer {
@@ -56,6 +57,7 @@ type Filter = "all" | "dr" | "cr" | "clear";
 type BalanceType = "dr" | "cr";
 
 export default function CustomersPage() {
+  const [openingMethod,setOpeningMethod]=useState("Cash");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
@@ -112,7 +114,7 @@ export default function CustomersPage() {
     const res = await fetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, balance: String(signedBalance) }),
+      body: JSON.stringify({ ...form, balance: String(signedBalance), paymentMethod: openingMethod }),
     });
     if (res.ok) {
       setModal(false);
@@ -351,6 +353,7 @@ export default function CustomersPage() {
                       value={form.balance}
                       onChange={e => setForm(f => ({ ...f, balance: e.target.value }))}
                     />
+            {balanceType==="cr"&&Number(form.balance)>0&&<PaymentMethodSelect value={openingMethod} onChange={setOpeningMethod}/>}
 
                     {/* DR button */}
                     <button

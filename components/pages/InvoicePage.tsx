@@ -1,4 +1,5 @@
 "use client";
+import PaymentMethodSelect from "@/components/finance/PaymentMethodSelect";
 import { useEffect, useRef, useState } from "react";
 
 /* ─── Types ─────────────────────────────────────── */
@@ -606,6 +607,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
   const [walkPhone, setWalkPhone] = useState("");
   // common
   const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [collectionMethod,setCollectionMethod]=useState("Cash");
   const [invDate, setInvDate] = useState(today());
   const [delDate, setDelDate] = useState(todayPlus(10));
   const [desc, setDesc] = useState("");
@@ -841,9 +843,10 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
     const res = await fetch(`/api/invoices/${inv.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amountPaid: inv.total, balanceDue: 0, status: "paid" }),
+      body: JSON.stringify({ amountPaid: inv.total, balanceDue: 0, status: "paid", paymentMethod: collectionMethod }),
     });
-    if (!res.ok) { showToast("Failed to update invoice status"); setPdfLoading(false); return; }
+    if (!res.ok) { const data = await res.json().catch(() => ({})); showToast(data.error || "Failed to update invoice status"); setPdfLoading(false); return; }
+    inv = {...inv,...await res.json()};
 
     loadInvoices();
     showToast(`Invoice ${inv.invNumber} marked as Paid`);
@@ -1246,11 +1249,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
               {/* ── Payment Method ── */}
               <div className="invoice-payment-method" style={{ marginTop: 14 }}>
                 <label style={lbl}>Payment Received By</label>
-                <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={inp}>
-                  <option value="Cash">Cash</option>
-                  <option value="Bank">Bank</option>
-                  <option value="Mobile Wallet">Mobile Wallet</option>
-                </select>
+                <PaymentMethodSelect value={paymentMethod} onChange={setPaymentMethod} style={inp}/>
               </div>
 
             </div>
@@ -1266,6 +1265,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
             </div>
             <button className="invoice-view-all" onClick={() => setActiveTab(activeTab === "list" ? "invoice" : "list")}>{activeTab === "list" ? "Create Invoice" : "View All"}</button>
           </div>
+          {activeTab === "list" && <div className="invoice-collection-method"><label>Receive outstanding payments via</label><PaymentMethodSelect value={collectionMethod} onChange={setCollectionMethod}/></div>}
           {loading ? (
             <div style={{ textAlign: "center", padding: "32px 0", color: "var(--muted)", fontSize: 13 }}>
               <i aria-hidden="true" className="fa-solid fa-spinner fa-spin" style={{ fontSize: 22, marginBottom: 10, display: "block" }}></i>
@@ -1783,11 +1783,7 @@ export default function InvoicePage({ searchQuery = "" }: { searchQuery?: string
                 {/* Payment Method */}
                 <div>
                   <label style={lbl}>Payment Received By</label>
-                  <select value={editPaymentMethod} onChange={e => setEditPaymentMethod(e.target.value)} style={inp}>
-                    <option value="Cash">Cash</option>
-                    <option value="Bank">Bank</option>
-                    <option value="Mobile Wallet">Mobile Wallet</option>
-                  </select>
+                  <PaymentMethodSelect value={editPaymentMethod} onChange={setEditPaymentMethod} style={inp}/>
                 </div>
 
                 {/* Footer actions */}

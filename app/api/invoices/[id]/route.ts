@@ -1,102 +1,142 @@
 import { requireAdmin } from "@/lib/auth/require-admin";
+import {
+  financialTransaction,
+  financeError,
+  FinanceError,
+  money,
+  date,
+  resolveMethod,
+} from "@/lib/finance/core";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-// DELETE /api/invoices/[id] — delete invoice and cascade dependencies
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const denied = await requireAdmin();
   if (denied) return denied;
-  const { id } = await params;
   try {
-    await prisma.$transaction(async (tx) => {
-      // WorkerTask has no onDelete cascade so must be removed first
+    const { id } = await params;
+    return await financialTransaction(async (tx) => {
+      const invoice = await tx.invoice.findUnique({ where: { id } });
+      if (!invoice) throw new FinanceError("Invoice not found");
+      if (
+        invoice.amountPaid > 0 ||
+        (await tx.cashBookEntry.count({ where: { invoiceId: id } })) ||
+        invoice.isRefunded
+      )
+        throw new FinanceError(
+          "Paid or refunded invoices cannot be deleted. Use Refund & Replace to record a money return.",
+        );
+      if (invoice.customerId)
+        await tx.customer.update({
+          where: { id: invoice.customerId },
+          data: { balance: { decrement: invoice.balanceDue } },
+        });
       await tx.workerTask.deleteMany({ where: { invoiceId: id } });
       await tx.invoice.delete({ where: { id } });
+      return NextResponse.json({ success: true });
     });
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to delete invoice" }, { status: 500 });
+  } catch (error) {
+    return financeError(error, "Failed to delete invoice");
   }
 }
-
-// PATCH /api/invoices/[id] — update invoice fields
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const denied = await requireAdmin();
   if (denied) return denied;
-  const { id } = await params;
   try {
-    const body = await req.json();
-    const {
-      amountPaid, balanceDue, status,
-      customerName, phone, invoiceDate, deliveryDate,
-      description, items, subtotal, discount, total, paymentMethod,
-    } = body;
-
-    // ── Fetch old invoice state before mutating ─────────────────────────────
-    const oldInvoice = await prisma.invoice.findUnique({
-      where: { id },
-      select: { amountPaid: true, balanceDue: true, total: true, customerId: true, invNumber: true, customerName: true, invoiceDate: true },
-    });
-
-    const invoice = await prisma.invoice.update({
-      where: { id },
-      data: {
-        ...(amountPaid   !== undefined && { amountPaid: Number(amountPaid) }),
-        ...(balanceDue   !== undefined && { balanceDue: Number(balanceDue) }),
-        ...(status       !== undefined && { status }),
-        ...(customerName !== undefined && { customerName }),
-        ...(phone        !== undefined && { phone: phone || null }),
-        ...(invoiceDate  !== undefined && { invoiceDate: new Date(invoiceDate) }),
-        ...(deliveryDate !== undefined && { deliveryDate: deliveryDate ? new Date(deliveryDate) : null }),
-        ...(description  !== undefined && { description: description || null }),
-        ...(items        !== undefined && { items }),
-        ...(subtotal     !== undefined && { subtotal: Number(subtotal) }),
-        ...(discount     !== undefined && { discount: Number(discount) }),
-        ...(total        !== undefined && { total: Number(total) }),
-        ...(paymentMethod !== undefined && { paymentMethod }),
-      },
-    });
-
-    // ── Sync customer balance when payment amounts change ──────────────────
-    // balanceDelta = new balanceDue − old balanceDue
-    //   negative → customer paid more → balance decreases (may flip to CR)
-    //   positive → customer owes more  → balance increases
-    if (oldInvoice?.customerId && (amountPaid !== undefined || balanceDue !== undefined || total !== undefined)) {
-      const newBalanceDue = balanceDue !== undefined ? Number(balanceDue) : invoice.balanceDue;
-      const oldBalanceDue = oldInvoice.balanceDue;
-      const balanceDelta = newBalanceDue - oldBalanceDue;
-
-      if (balanceDelta !== 0) {
-        await prisma.customer.update({
-          where: { id: oldInvoice.customerId },
-          data: { balance: { increment: balanceDelta } },
-        });
+    const { id } = await params,
+      b = await req.json();
+    return await financialTransaction(async (tx) => {
+      const old = await tx.invoice.findUnique({ where: { id } });
+      if (!old) throw new FinanceError("Invoice not found");
+      if (old.status === "returned")
+        throw new FinanceError("Fully returned invoices are locked");
+      const total = b.total === undefined ? old.total : money(b.total, "Total"),
+        paid =
+          b.amountPaid === undefined
+            ? old.amountPaid
+            : money(b.amountPaid, "Paid amount");
+      if (paid < old.amountPaid)
+        throw new FinanceError(
+          "Use Refund & Replace to return money; paid amounts cannot be reduced by editing an invoice",
+        );
+      if (total < old.amountPaid)
+        throw new FinanceError(
+          "Use Refund & Replace to reduce an invoice below its paid amount",
+        );
+      const delta = Math.round((paid - old.amountPaid) * 100) / 100;
+      const method =
+        delta > 0 ||
+        b.paymentMethod !== undefined ||
+        b.paymentMethodId !== undefined
+          ? await resolveMethod(
+              tx,
+              b.paymentMethod || old.paymentMethod || "Cash",
+              b.paymentMethodId,
+            )
+          : null;
+      const due = Math.max(0, Math.round((total - paid) * 100) / 100);
+      const updated = await tx.invoice.update({
+        where: { id },
+        data: {
+          total,
+          amountPaid: paid,
+          balanceDue: due,
+          status: due <= 0 ? "paid" : paid > 0 ? "partial" : "pending",
+          ...(method ? { paymentMethod: method.name } : {}),
+          ...(b.customerName !== undefined
+            ? {
+                customerName:
+                  String(b.customerName).trim() || "Walk-in Customer",
+              }
+            : {}),
+          ...(b.phone !== undefined ? { phone: b.phone || null } : {}),
+          ...(b.invoiceDate !== undefined
+            ? { invoiceDate: date(b.invoiceDate) }
+            : {}),
+          ...(b.deliveryDate !== undefined
+            ? { deliveryDate: b.deliveryDate ? date(b.deliveryDate) : null }
+            : {}),
+          ...(b.description !== undefined
+            ? { description: b.description || null }
+            : {}),
+          ...(b.items !== undefined ? { items: b.items } : {}),
+          ...(b.subtotal !== undefined
+            ? { subtotal: money(b.subtotal, "Subtotal") }
+            : {}),
+          ...(b.discount !== undefined
+            ? { discount: money(b.discount, "Discount") }
+            : {}),
+        },
+      });
+      if (old.customerId) {
+        const balanceChange = total - old.total - delta;
+        if (balanceChange)
+          await tx.customer.update({
+            where: { id: old.customerId },
+            data: { balance: { increment: balanceChange } },
+          });
       }
-
-      // ── Cashbook: record newly received cash ──────────────────────────────
-      // paymentDelta = increase in amountPaid since last save
-      const newAmountPaid = amountPaid !== undefined ? Number(amountPaid) : invoice.amountPaid;
-      const paymentDelta = newAmountPaid - (oldInvoice.amountPaid ?? 0);
-
-      if (paymentDelta > 0) {
-        await prisma.cashBookEntry.create({
+      if (delta > 0)
+        await tx.cashBookEntry.create({
           data: {
-            entryDate: invoice.invoiceDate,
+            paymentMethodId: method!.id,
+            entryDate: new Date(),
             type: "credit",
-            description: `Payment received — ${invoice.invNumber}`,
-            amount: paymentDelta,
-            invoice: { connect: { id } },
-            customer: { connect: { id: oldInvoice.customerId } },
-            notes: `Invoice ${invoice.invNumber} · ${invoice.customerName}`,
+            amount: delta,
+            description: `Payment received — ${updated.invNumber}`,
+            invoiceId: id,
+            customerId: old.customerId,
+            sourceType: "invoice",
+            sourceId: id,
           },
         });
-      }
-    }
-
-    return NextResponse.json(invoice);
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to update invoice" }, { status: 500 });
+      return NextResponse.json(updated);
+    });
+  } catch (error) {
+    return financeError(error, "Failed to update invoice");
   }
 }

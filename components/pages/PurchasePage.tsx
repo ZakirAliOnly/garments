@@ -1,4 +1,5 @@
 "use client";
+import PaymentMethodSelect from "@/components/finance/PaymentMethodSelect";
 import { useEffect, useState } from "react";
 
 /* ─── Types ──────────────────────────────────────────── */
@@ -324,6 +325,7 @@ export default function PurchasePage() {
   const [viewPo, setViewPo] = useState<Purchase | null>(null);
   const [payTarget, setPayTarget] = useState<Purchase | null>(null);
   const [payAmount, setPayAmount] = useState("");
+  const [payMethod,setPayMethod]=useState("Cash");
   const [editSupplier, setEditSupplier] = useState<Supplier | null>(null);
   const [editSupForm, setEditSupForm] = useState(INIT_SUPPLIER);
 
@@ -595,7 +597,7 @@ export default function PurchasePage() {
       const res = await fetch(`/api/purchases/${payTarget.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ additionalPayment: amt }),
+        body: JSON.stringify({ additionalPayment: amt, paymentMethod: payMethod }),
       });
       if (!res.ok) throw new Error(await res.text());
       setPayModal(false);
@@ -1153,12 +1155,7 @@ export default function PurchasePage() {
           </div>
           <div>
             <label style={lbl}>Payment Mode</label>
-            <select style={sel} value={poForm.paymentMode} onChange={e => setPoForm(f => ({ ...f, paymentMode: e.target.value }))}>
-              <option>Cash</option>
-              <option>Bank Transfer</option>
-              <option>Cheque</option>
-              <option>EasyPaisa / JazzCash</option>
-            </select>
+            <PaymentMethodSelect value={poForm.paymentMode} onChange={v => setPoForm(f => ({...f,paymentMode:v}))} style={sel}/>
           </div>
           <div style={{ gridColumn: "span 2" }}>
             <label style={lbl}>Notes</label>
@@ -1273,6 +1270,7 @@ export default function PurchasePage() {
           <div style={{ marginBottom: 14 }}>
             <label style={lbl}>Payment Amount (Rs) *</label>
             <input type="number" style={inp} placeholder={`Max: Rs ${payTarget.balanceDue.toLocaleString()}`} value={payAmount} min="0" max={payTarget.balanceDue} onChange={e => setPayAmount(e.target.value)} />
+            <label style={lbl}>Payment method</label><PaymentMethodSelect value={payMethod} onChange={setPayMethod} style={sel}/>
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button style={btnSecondary} onClick={() => setPayModal(false)}><i className="fa-solid fa-xmark" /> Cancel</button>

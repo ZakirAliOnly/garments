@@ -6,6 +6,7 @@ const titles: Record<Page, [string, string]> = {
   dashboard: ["Dashboard", "house"], stock: ["Stock / Inventory", "boxes-stacked"],
   purchase: ["Purchase", "cart-shopping"], invoice: ["Invoice", "file-invoice"],
   refund: ["Refund & Replace", "rotate-left"], cashbook: ["Cashbook", "book-open"],
+  workers: ["Workers", "users"], "payment-methods": ["Payment Method", "wallet"],
   reports: ["Reports", "chart-line"], settings: ["Settings", "gear"],
 };
 interface SearchResult { id: string; title: string; subtitle: string; query: string; page: Page }
