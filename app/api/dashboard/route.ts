@@ -10,7 +10,7 @@ export async function GET() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    const [totalCustomers, stockItems, recentCustomers, walkInMonthly, regularMonthly] =
+    const [totalCustomers, stockItems, recentCustomers, walkInMonthly, regularMonthly, dailyInvoices] =
       await Promise.all([
         prisma.customer.count(),
         prisma.stockItem.findMany({
@@ -31,7 +31,11 @@ export async function GET() {
           _sum: { total: true },
           _count: true,
         }),
+        prisma.invoice.findMany({ where: { invoiceDate: { gte: monthStart, lte: monthEnd } }, select: { invoiceDate: true, total: true } }),
       ]);
+
+    const salesByDay = Array.from({ length: monthEnd.getDate() }, (_, i) => ({ day: i + 1, total: 0 }));
+    for (const invoice of dailyInvoices) salesByDay[invoice.invoiceDate.getDate() - 1].total += invoice.total;
 
     const lowStock = stockItems.filter(
       (i) => i.quantity > 0 && i.quantity <= i.lowStockThreshold,
@@ -44,6 +48,7 @@ export async function GET() {
     const totalMonthlySales = walkInSales + regularSales;
 
     return NextResponse.json({
+      salesByDay,
       totalCustomers,
       lowStock,
       outOfStock,

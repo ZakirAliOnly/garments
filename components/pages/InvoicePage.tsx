@@ -216,7 +216,7 @@ function buildRegularHTML(d: { logoUrl: string; invNumber: string; customerName:
       <div style="min-width:300px;">
         <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid #e8eef7;"><span style="color:#7a8baa;">Subtotal:</span><span style="font-weight:600;">Rs ${d.sub.toLocaleString()}</span></div>
         ${d.dis > 0 ? `<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid #e8eef7;"><span style="color:#7a8baa;">Discount:</span><span style="font-weight:600;color:#e03c3c;">— Rs ${d.dis.toLocaleString()}</span></div>` : ""}
-        <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:18px;font-weight:900;color:#0a1628;border-top:2px solid #1057a0;"><span>Total:</span><span>Rs ${d.tot.toLocaleString()}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:18px;font-weight:900;color:#0a1628;border-top:2px solid #1057a0;"><span>Total Payable:</span><span>Rs ${d.tot.toLocaleString()}</span></div>
         <div style="background:#f4f7fc;border-radius:8px;padding:10px 14px;margin-top:4px;">
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span style="color:#7a8baa;">Amount Paid:</span><span style="font-weight:700;color:#22a86e;">Rs ${d.paid.toLocaleString()}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:900;${d.due > 0 ? "color:#e03c3c;" : "color:#22a86e;"}"><span>Balance Due:</span><span>Rs ${Math.abs(d.due).toLocaleString()}${d.due < 0 ? " (CR)" : ""}</span></div>
@@ -619,7 +619,7 @@ export default function InvoicePage() {
   const PAGE_SIZE = 10;
 
   /* tabs */
-  const [activeTab, setActiveTab] = useState<"invoice" | "report">("invoice");
+  const [activeTab, setActiveTab] = useState<"invoice" | "list" | "report">("invoice");
 
   /* report filters — default to today */
   const [rptFrom, setRptFrom] = useState(today());
@@ -934,30 +934,30 @@ export default function InvoicePage() {
 
       {/* ── Tab Bar ── */}
       <div style={{ display: "flex", borderBottom: "2px solid var(--bg2)", marginBottom: 20, gap: 4 }}>
-        {(["invoice", "report"] as const).map(t => (
+        {(["invoice", "list", "report"] as const).map(t => (
           <button
             key={t}
             onClick={() => setActiveTab(t)}
             style={{
               padding: "10px 22px", fontSize: 13, fontWeight: 600, fontFamily: "inherit",
               border: "none", borderBottom: activeTab === t ? "3px solid var(--blue2)" : "3px solid transparent",
-              background: "none", color: activeTab === t ? "var(--blue2)" : "var(--muted)",
+              borderRadius: 12, background: activeTab === t ? "linear-gradient(135deg,var(--blue),var(--blue2))" : "none", color: activeTab === t ? "white" : "var(--muted)",
               cursor: "pointer", transition: "all .2s", marginBottom: -2,
               display: "flex", alignItems: "center", gap: 7,
             }}
           >
             <i className={`fa-solid ${t === "invoice" ? "fa-file-invoice" : "fa-chart-bar"}`}></i>
-            {t === "invoice" ? "Invoices" : "Invoice Report"}
+            {t === "invoice" ? "Create Invoice" : t === "list" ? "Invoices" : "Invoice Report"}
           </button>
         ))}
       </div>
 
       {/* ── Invoice Tab ── */}
-      {activeTab === "invoice" && (
-      <div className="inv-grid" style={{ display: "flex", flexDirection: "row", gap: 20, alignItems: "flex-start" }}>
+      {activeTab !== "report" && (
+      <div className={`inv-grid invoice-workspace ${activeTab === "list" ? "invoice-list-view" : ""}`} style={{ display: "flex", flexDirection: "row", gap: 20, alignItems: "flex-start" }}>
 
         {/* ─── LEFT: Invoice Form ─── */}
-        <div style={{ ...card, width: 480, flexShrink: 0, marginBottom: 0 }}>
+        <div className="invoice-editor" style={{ ...card, flex: 1, minWidth: 0, marginBottom: 0 }}>
 
           {/* Form */}
           {formType && (
@@ -1187,7 +1187,7 @@ export default function InvoicePage() {
                   <input type="number" min={0} value={discount} onChange={e => setDiscount(Number(e.target.value))} style={{ width: 90, padding: "5px 9px", border: "1.5px solid var(--bg2)", borderRadius: 7, fontFamily: "inherit", fontSize: 13, outline: "none", textAlign: "right" }} />
                 </div>
                 <div style={{ display: "flex", gap: 30, fontSize: 16, fontWeight: 700, color: "var(--blue)", borderTop: "2px solid var(--bg2)", paddingTop: 8, marginTop: 4, width: "100%", justifyContent: "flex-end" }}>
-                  <span>Total:</span><span>Rs {total.toLocaleString()}</span>
+                  <span>Total Payable:</span><span>Rs {total.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -1241,9 +1241,9 @@ export default function InvoicePage() {
                   <i className={`fa-solid ${saving ? "fa-spinner fa-spin" : "fa-floppy-disk"}`}></i>
                   {saving ? "Saving..." : "Save Invoice"}
                 </button>
-                <button onClick={printInvoice} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#22a86e,#1a8f5a)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
+                <button onClick={printInvoice} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
                   <i className="fa-solid fa-print"></i>
-                  {formType === "walk" ? "Print Receipt" : "Print Invoice"}
+                  {formType === "walk" ? "Print & Complete Invoice" : "Print & Complete Invoice"}
                 </button>
               </div>
             </div>
@@ -1251,11 +1251,12 @@ export default function InvoicePage() {
         </div>
 
         {/* ─── RIGHT: Recent Invoices ─── */}
-        <div style={{ ...card, flex: 1, minWidth: 0, marginBottom: 0 }}>
+        <div className="invoice-history" style={{ ...card, width: "36%", minWidth: 0, marginBottom: 0 }}>
           <div style={{ display: "flex", alignItems: "center", marginBottom: 18, paddingBottom: 14, borderBottom: "1.5px solid var(--bg2)" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", display: "flex", alignItems: "center", gap: 9 }}>
-              <i className="fa-solid fa-list" style={{ color: "var(--blue2)", fontSize: 15 }}></i> Recent Invoices
+              <i className="fa-solid fa-list" style={{ color: "var(--blue2)", fontSize: 15 }}></i> {activeTab === "list" ? "All Invoices" : "Recent Invoices"}
             </div>
+            <button className="invoice-view-all" onClick={() => setActiveTab(activeTab === "list" ? "invoice" : "list")}>{activeTab === "list" ? "Create Invoice" : "View All"}</button>
           </div>
           {loading ? (
             <div style={{ textAlign: "center", padding: "32px 0", color: "var(--muted)", fontSize: 13 }}>
@@ -1268,6 +1269,10 @@ export default function InvoicePage() {
               <div style={{ fontWeight: 600, fontSize: 14 }}>No invoices yet</div>
               <div style={{ fontSize: 12, marginTop: 4 }}>Create your first invoice above</div>
             </div>
+          ) : activeTab === "invoice" ? (
+            <><div className="recent-invoice-cards">{invoices.slice(0, 5).map(inv => <button key={inv.id} onClick={() => setViewInvoice(inv)}>
+              <i className="fa-solid fa-file-invoice" /><span><strong>{inv.invNumber}</strong><small>{inv.customerName || "Walk-in Customer"}</small></span><span className="invoice-card-amount"><strong>Rs {inv.total.toLocaleString()}</strong><small>{fmtDate(inv.invoiceDate)}</small></span><span className={`invoice-status ${inv.status}`}>{inv.status}</span>
+            </button>)}</div><div className="invoice-shortcuts"><button onClick={printInvoice}><i className="fa-solid fa-print"/>Print & Complete</button><button onClick={saveInvoice} disabled={saving}><i className="fa-solid fa-floppy-disk"/>Save Invoice</button><button onClick={resetForm}><i className="fa-solid fa-rotate-left"/>New Invoice</button><button onClick={() => { if (window.confirm("Clear the current invoice?")) resetForm(); }}><i className="fa-solid fa-xmark"/>Clear Form</button></div></>
           ) : (
             (() => {
               const totalPages = Math.ceil(invoices.length / PAGE_SIZE);
@@ -1347,7 +1352,7 @@ export default function InvoicePage() {
                                     <button
                                       onClick={() => printExistingInvoice(inv)}
                                       title="Mark as Paid & Print"
-                                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#22a86e,#1a8f5a)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(34,168,110,.3)" }}
+                                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(34,168,110,.3)" }}
                                     >
                                       <i className="fa-solid fa-print" style={{ fontSize: 9 }}></i> Print
                                     </button>
@@ -1885,7 +1890,7 @@ export default function InvoicePage() {
                     <button onClick={() => openWhatsApp(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#25d366,#128c7e)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(37,211,102,.3)" }}>
                       <i className="fa-brands fa-whatsapp" style={{ fontSize: 15 }}></i> Send via WhatsApp
                     </button>
-                    <button onClick={() => printInvoiceCopy(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#22a86e,#1a8f5a)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
+                    <button onClick={() => printInvoiceCopy(inv)} style={{ padding: "9px 20px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#0076e8,#009fdb)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(34,168,110,.3)" }}>
                       <i className="fa-solid fa-print"></i> Print Invoice
                     </button>
                   </div>
