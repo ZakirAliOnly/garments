@@ -214,6 +214,8 @@ model Worker {
   joinDate   DateTime?
   status     String       @default("active") // "active" | "leave" | "inactive"
   notes      String?
+  extraHoursRate Decimal @default(0) @db.Decimal(18, 2)
+  payrolls   WorkerPayroll[]
   tasks      WorkerTask[]
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
@@ -241,6 +243,63 @@ model WorkerTask {
   updatedAt       DateTime  @updatedAt
 }
 
+model PaymentMethod {
+  id String @id @default(cuid())
+  name String @unique
+  openingBalance Decimal @default(0) @db.Decimal(18, 2)
+  active Boolean @default(true)
+  entries CashBookEntry[]
+  outgoing PaymentTransfer[] @relation("TransferFrom")
+  incoming PaymentTransfer[] @relation("TransferTo")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentTransfer {
+  id String @id @default(cuid())
+  fromId String
+  from PaymentMethod @relation("TransferFrom", fields: [fromId], references: [id], onDelete: Restrict)
+  toId String
+  to PaymentMethod @relation("TransferTo", fields: [toId], references: [id], onDelete: Restrict)
+  amount Decimal @db.Decimal(18, 2)
+  entryDate DateTime
+  notes String?
+  requestKey String @unique
+  createdAt DateTime @default(now())
+}
+
+model WorkerPayroll {
+  id String @id @default(cuid())
+  workerId String
+  worker Worker @relation(fields: [workerId], references: [id], onDelete: Restrict)
+  month String
+  monthlyWage Decimal @db.Decimal(18, 2)
+  absentDays Decimal @default(0) @db.Decimal(5, 2)
+  paidAmount Decimal @default(0) @db.Decimal(18, 2)
+  paidAt DateTime?
+  paymentMethodName String?
+  notes String?
+  adjustments PayrollAdjustment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([workerId, month])
+}
+
+model PayrollAdjustment {
+  id String @id @default(cuid())
+  payrollId String
+  payroll WorkerPayroll @relation(fields: [payrollId], references: [id], onDelete: Restrict)
+  kind String
+  amount Decimal @db.Decimal(18, 2)
+  hours Decimal? @db.Decimal(10, 2)
+  rate Decimal? @db.Decimal(18, 2)
+  entryDate DateTime
+  paymentMethodName String?
+  notes String?
+  requestKey String @unique
+  createdAt DateTime @default(now())
+}
+
 model CashBookEntry {
   id          String    @id @default(cuid())
   entryDate   DateTime
@@ -248,6 +307,12 @@ model CashBookEntry {
   description String
   amount      Float
   notes       String?
+  paymentMethodId String
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+  sourceType String @default("manual")
+  sourceId String?
+  @@index([paymentMethodId, entryDate])
+  @@index([sourceType, sourceId])
   // Optional links
   customerId  String?
   customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)

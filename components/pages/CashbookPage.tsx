@@ -1,4 +1,6 @@
 "use client";
+import PaymentMethodSelect from "@/components/finance/PaymentMethodSelect";
+import { usePaymentMethods } from "@/lib/hooks/usePaymentMethods";
 import { useEffect, useState, useCallback } from "react";
 import { useCustomersLean } from "@/lib/hooks/useQueries";
 
@@ -13,6 +15,7 @@ interface InvoicePreview {
 }
 
 interface CashEntry {
+  paymentMethod?: {id:string;name:string}; sourceType?: string;
   id: string;
   entryDate: string;
   createdAt: string;
@@ -180,7 +183,7 @@ function InvoiceModal({ inv, onClose }: { inv: InvoicePreview; onClose: () => vo
 /* ─── Entry Form Modal (shared by New + Edit) ────── */
 interface EntryFormData {
   entryDate: string; type: string; description: string;
-  amount: string; notes: string; customerId: string;
+  amount: string; notes: string; customerId: string; paymentMethod: string;
 }
 
 function EntryFormModal({ title, icon, initial, onClose, onSave }: {
@@ -197,7 +200,6 @@ function EntryFormModal({ title, icon, initial, onClose, onSave }: {
   const set = (k: keyof EntryFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   async function handleSave() {
-    if (!form.customerId) { setErr("Please select an account."); return; }
     if (!form.description.trim()) { setErr("Description is required."); return; }
     if (!form.amount || Number(form.amount) <= 0) { setErr("Please enter a valid amount."); return; }
     setSaving(true);
@@ -233,7 +235,7 @@ function EntryFormModal({ title, icon, initial, onClose, onSave }: {
 
           {/* 1. Account */}
           <div style={{ marginBottom: 14 }}>
-            <label style={lbl}>Account *</label>
+            <label style={lbl}>Account (optional)</label>
             <select
               value={form.customerId}
               onChange={e => set("customerId", e.target.value)}
@@ -279,6 +281,7 @@ function EntryFormModal({ title, icon, initial, onClose, onSave }: {
 
           {/* Notes (optional) */}
           <div style={{ marginBottom: 20 }}>
+            <label style={lbl}>Payment method</label><PaymentMethodSelect value={form.paymentMethod} onChange={v => set("paymentMethod",v)} style={inp}/>
             <label style={lbl}>Notes <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span></label>
             <textarea
               rows={2} placeholder="Additional notes..."
@@ -306,6 +309,8 @@ function EntryFormModal({ title, icon, initial, onClose, onSave }: {
 
 /* ─── Main Page ──────────────────────────────────── */
 export default function CashbookPage() {
+  const {data: methodData}=usePaymentMethods();
+  const [filterMethodId,setFilterMethodId]=useState("");
   const [entries, setEntries] = useState<CashEntry[]>([]);
   const [totals, setTotals] = useState<Totals>({ totalIncome: 0, totalExpense: 0, netBalance: 0 });
   const [loading, setLoading] = useState(true);
@@ -320,6 +325,7 @@ export default function CashbookPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
+    if(filterMethodId)params.set("paymentMethodId",filterMethodId);
     if (filterType !== "all") params.set("type", filterType);
     if (filterFrom) params.set("dateFrom", filterFrom);
     if (filterTo) params.set("dateTo", filterTo);
@@ -330,14 +336,15 @@ export default function CashbookPage() {
       setTotals(data.totals);
     }
     setLoading(false);
-  }, [filterType, filterFrom, filterTo]);
+  }, [filterType, filterFrom, filterTo,filterMethodId]);
 
   useEffect(() => { load(); }, [load]);
 
   async function deleteEntry(id: string) {
     if (!confirm("Delete this cashbook entry?")) return;
     setDeleting(id);
-    await fetch(`/api/cashbook/${id}`, { method: "DELETE" });
+    const response=await fetch(`/api/cashbook/${id}`, { method: "DELETE" });
+    if(!response.ok){const data=await response.json().catch(()=>({}));alert(data.error||"Unable to delete entry");}
     setDeleting(null);
     load();
   }
@@ -347,6 +354,7 @@ export default function CashbookPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        paymentMethod: form.paymentMethod,
         entryDate: form.entryDate,
         type: form.type,
         description: form.description.trim(),
@@ -366,6 +374,7 @@ export default function CashbookPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        paymentMethod: form.paymentMethod,
         entryDate: form.entryDate,
         type: form.type,
         description: form.description.trim(),
@@ -427,6 +436,7 @@ export default function CashbookPage() {
             Cashbook Entries
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <select aria-label="Filter by payment method" value={filterMethodId} onChange={e=>setFilterMethodId(e.target.value)} style={{padding:"7px 12px",border:"1px solid var(--bg3)",borderRadius:10,fontSize:12}}><option value="">All payment methods</option>{methodData?.methods.map(m=><option key={m.id} value={m.id}>{m.name}{m.active?"":" (archived)"}</option>)}</select>
             <select
               value={filterType} onChange={e => setFilterType(e.target.value)}
               style={{ padding: "7px 12px", border: "1.5px solid var(--bg2)", borderRadius: 20, fontFamily: "inherit", fontSize: 12, outline: "none", cursor: "pointer", background: "white", color: "var(--ink)" }}
@@ -445,9 +455,9 @@ export default function CashbookPage() {
               style={{ padding: "7px 12px", border: "1.5px solid var(--bg2)", borderRadius: 20, fontFamily: "inherit", fontSize: 12, outline: "none", background: "white", color: "var(--ink)" }}
               title="To date"
             />
-            {(filterFrom || filterTo || filterType !== "all") && (
+            {(filterFrom || filterTo || filterMethodId || filterType !== "all") && (
               <button
-                onClick={() => { setFilterType("all"); setFilterFrom(""); setFilterTo(""); }}
+                onClick={() => { setFilterType("all"); setFilterFrom(""); setFilterTo(""); setFilterMethodId(""); }}
                 style={{ padding: "7px 12px", border: "1.5px solid var(--bg2)", borderRadius: 20, fontFamily: "inherit", fontSize: 12, background: "white", color: "var(--muted)", cursor: "pointer" }}
               >
                 Clear
@@ -524,7 +534,7 @@ export default function CashbookPage() {
                     </td>
                     {/* Description */}
                     <td style={{ ...td, fontWeight: 600 }}>
-                      {entry.description}
+                      {entry.description}<small style={{display:"block",color:"var(--muted)",fontSize:11}}>{entry.paymentMethod?.name || "Cash"}{entry.sourceType==="transfer"?" · Internal transfer":""}</small>
                       {entry.notes && <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400, marginTop: 1 }}>{entry.notes}</div>}
                     </td>
                     {/* Entry Type (Invoice / Ledger) */}
@@ -570,7 +580,7 @@ export default function CashbookPage() {
                     <td style={{ ...td, textAlign: "center" }}>
                       <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
                         {/* Edit — only for manual (ledger) entries */}
-                        {!entry.invoiceId && (
+                        {!entry.invoiceId && (!entry.sourceType || entry.sourceType === "manual") && (
                           <button
                             onClick={() => setEditEntry(entry)}
                             title="Edit Entry"
@@ -590,7 +600,7 @@ export default function CashbookPage() {
                           </button>
                         )}
                         {/* Delete — only for manual (ledger) entries */}
-                        {!entry.invoiceId && (
+                        {!entry.invoiceId && (!entry.sourceType || entry.sourceType === "manual") && (
                           <button
                             onClick={() => deleteEntry(entry.id)}
                             disabled={deleting === entry.id}
@@ -632,7 +642,7 @@ export default function CashbookPage() {
         <EntryFormModal
           title="New Cashbook Entry"
           icon="fa-book-open"
-          initial={{ entryDate: today(), type: "credit", description: "", amount: "", notes: "", customerId: "" }}
+          initial={{ entryDate: today(), type: "credit", description: "", amount: "", notes: "", customerId: "", paymentMethod: "Cash" }}
           onClose={() => setShowNewEntry(false)}
           onSave={handleNewSave}
         />
@@ -648,6 +658,7 @@ export default function CashbookPage() {
             amount: String(editEntry.amount),
             notes: editEntry.notes || "",
             customerId: editEntry.customerId || "",
+            paymentMethod: editEntry.paymentMethod?.name || "Cash",
           }}
           onClose={() => setEditEntry(null)}
           onSave={handleEditSave}

@@ -9,6 +9,8 @@ const sections: { label: string; items: { id: Page; icon: string; label: string 
     { id: "invoice", icon: "file-invoice", label: "Invoice" },
     { id: "refund", icon: "rotate-left", label: "Refund & Replace" },
     { id: "cashbook", icon: "book-open", label: "Cashbook" },
+    { id: "workers", icon: "users", label: "Workers" },
+    { id: "payment-methods", icon: "wallet", label: "Payment Method" },
   ] },
   { label: "More", items: [{ id: "reports", icon: "chart-line", label: "Reports" }, { id: "settings", icon: "gear", label: "Settings" }] },
 ];

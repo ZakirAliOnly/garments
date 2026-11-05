@@ -1,4 +1,5 @@
 "use client";
+import PaymentMethodSelect from "@/components/finance/PaymentMethodSelect";
 import { useEffect, useMemo, useState } from "react";
 
 type RequestType = "refund" | "replace";
@@ -281,6 +282,8 @@ function buildRefundRegularHTML(inv: LookupInvoice, rrNumber: string) {
 }
 
 export default function RefundPage() {
+  const [refundMethod,setRefundMethod]=useState("Cash");
+  const [settlement,setSettlement]=useState("cash");
   const [requests, setRequests] = useState<RefundRow[]>([]);
   const [stockItems, setStockItems] = useState<StockRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -469,6 +472,7 @@ export default function RefundPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        paymentMethod: refundMethod, settlement,
         invNumber: lookupInvoice.invNumber,
         type: reqType,
         reason,
@@ -813,6 +817,8 @@ export default function RefundPage() {
             </div>
           )}
 
+          <div className="finance-form-grid" style={{marginTop:16}}><label>SETTLEMENT<select value={settlement} onChange={e=>setSettlement(e.target.value)} style={inputStyle}><option value="cash">Pay / receive via payment method</option>{lookupInvoice?.customer && <option value="account">Adjust customer account only (no money moves)</option>}</select></label>{settlement==="cash"&&<label>PAYMENT METHOD<PaymentMethodSelect value={refundMethod} onChange={setRefundMethod} style={inputStyle}/></label>}</div>
+          <p className="finance-help">Refunds first reduce any unpaid invoice balance. Only the cash actually returned reduces the selected method. Account-only credits do not move cash.</p>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
             <div style={{ fontSize: 12, color: "var(--muted)" }}>
               Refund updates stock + customer balance. Replace updates returned stock, issued replacement stock, and only adjusts balance by the net difference.
