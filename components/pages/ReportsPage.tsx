@@ -142,7 +142,7 @@ const REPORT_CARDS = [
     icon: "fa-file-invoice-dollar",
     title: "Invoice Report",
     desc: "Track all sales transactions, revenue & payment status",
-    color: "#1057a0",
+    color: "#0064d5",
     badge: "Daily / Monthly / Custom",
   },
   {
@@ -150,7 +150,7 @@ const REPORT_CARDS = [
     icon: "fa-rotate-left",
     title: "Refund / Replacement Report",
     desc: "Monitor returned or replaced items and refund amounts",
-    color: "#d97706",
+    color: "#0064d5",
     badge: "Daily / Monthly / Custom",
   },
   {
@@ -158,7 +158,7 @@ const REPORT_CARDS = [
     icon: "fa-users",
     title: "Customer Report",
     desc: "Analyze customer behavior, spending & outstanding balances",
-    color: "#22a86e",
+    color: "#0064d5",
     badge: "All-Time Snapshot",
   },
   {
@@ -166,7 +166,7 @@ const REPORT_CARDS = [
     icon: "fa-boxes-stacked",
     title: "Stock Report",
     desc: "Monitor overall inventory movement, additions & sales",
-    color: "#7c3aed",
+    color: "#0064d5",
     badge: "Daily / Monthly / Custom",
   },
   {
@@ -174,7 +174,7 @@ const REPORT_CARDS = [
     icon: "fa-chart-line",
     title: "Stock Report by Product",
     desc: "Deep analysis of specific products with date filters",
-    color: "#0891b2",
+    color: "#0064d5",
     badge: "Multi-Select + Date",
   },
   {
@@ -182,7 +182,7 @@ const REPORT_CARDS = [
     icon: "fa-layer-group",
     title: "Batch / COGS Report",
     desc: "View all stock batches, cost prices and FIFO consumption status",
-    color: "#7c3aed",
+    color: "#0064d5",
     badge: "All Batches",
   },
   {
@@ -190,7 +190,7 @@ const REPORT_CARDS = [
     icon: "fa-cart-flatbed",
     title: "Purchase Report",
     desc: "Track all supplier purchases, payments and outstanding balances",
-    color: "#be123c",
+    color: "#0064d5",
     badge: "Daily / Monthly / Custom",
   },
 ];
@@ -787,7 +787,7 @@ export default function ReportsPage() {
                 placeholder="e.g. BATCH-0001"
                 value={batchSearch}
                 onChange={(e) => setBatchSearch(e.target.value)}
-                style={{ width: "100%", padding: "8px 10px", border: "1.5px solid var(--border)", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "monospace", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "8px 10px", border: "1.5px solid var(--border)", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
               />
             </div>
           </div>
@@ -833,7 +833,7 @@ export default function ReportsPage() {
               </div>
             )}
             {filters.mode === "custom" && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+              <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                 <div>
                   <label style={labelStyle}>From Date</label>
                   <input type="date" value={filters.from} max={today()}
@@ -901,7 +901,7 @@ export default function ReportsPage() {
             {filters.productIds.length > 0 && (
               <div style={{ marginTop: 8, fontSize: 11, color: "var(--muted)" }}>
                 {filters.productIds.length} product(s) selected
-                <button onClick={() => setFilters((f) => ({ ...f, productIds: [] }))}
+                <button data-ui-action="danger" onClick={() => setFilters((f) => ({ ...f, productIds: [] }))}
                   style={{ marginLeft: 8, border: "none", background: "none", color: "var(--red)", cursor: "pointer", fontSize: 11 }}>
                   Clear all
                 </button>
@@ -910,7 +910,7 @@ export default function ReportsPage() {
           </div>
         )}
 
-        <button
+        <button data-ui-action="primary"
           onClick={generateReport}
           disabled={loading}
           style={{
@@ -953,13 +953,13 @@ export default function ReportsPage() {
 
         {/* Action buttons (fixed at bottom of content) */}
         <div style={{ padding: "8px 24px 16px", borderTop: "1px solid var(--bg2)", display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button
+          <button data-ui-action="secondary"
             onClick={() => { if (reportData && activeCard) printReport(reportData, filters, activeCard.title); }}
             style={{ ...actionBtn, background: "var(--ink)", color: "white" }}
           >
             <i className="fa-solid fa-print"></i> Print
           </button>
-          <button
+          <button data-ui-action="secondary"
             onClick={() => { if (reportData && activeCard) downloadPDF(reportData, filters, activeCard.title); }}
             style={{ ...actionBtn, background: "#e03c3c", color: "white" }}
           >
@@ -970,7 +970,7 @@ export default function ReportsPage() {
               {fmt(range.from)} – {fmt(range.to)}
             </span>
           )}
-          <button
+          <button data-ui-action="secondary"
             onClick={() => { setPhase("filter"); setReportData(null); }}
             style={{ ...actionBtn, background: "var(--bg2)", color: "var(--ink)", marginLeft: "auto" }}
           >
@@ -1224,7 +1224,7 @@ export default function ReportsPage() {
                   onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = "var(--bg)"}
                   onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "white"}
                 >
-                  <td style={{ ...tdStyle, fontWeight: 600, color: "var(--blue)", fontFamily: "monospace" }}>{s.code}</td>
+                  <td style={{ ...tdStyle, fontWeight: 600, color: "var(--blue)", fontFamily: "inherit" }}>{s.code}</td>
                   <td style={{ ...tdStyle, fontWeight: 500 }}>{s.name}{s.hasVariants && <span style={{ fontSize: 10, marginLeft: 6, color: "var(--muted)", background: "var(--bg)", borderRadius: 4, padding: "1px 5px" }}>has variants</span>}</td>
                   <td style={{ ...tdStyle, color: "var(--muted)" }}>{s.category}</td>
                   <td style={{ ...tdStyle, color: "var(--muted)" }}>{s.unit}</td>
@@ -1241,7 +1241,7 @@ export default function ReportsPage() {
                     onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
                     style={{ background: "#f8fafc" }}
                   >
-                    <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 11, color: "var(--muted)", paddingLeft: 24 }}>{v.sku}</td>
+                    <td style={{ ...tdStyle, fontFamily: "inherit", fontSize: 11, color: "var(--muted)", paddingLeft: 24 }}>{v.sku}</td>
                     <td style={{ ...tdStyle, paddingLeft: 24, color: "var(--ink)", fontSize: 13 }}>
                       {[v.size && `Size: ${v.size}`, v.color && `Color: ${v.color}`].filter(Boolean).join(" · ") || "—"}
                     </td>
@@ -1294,9 +1294,9 @@ export default function ReportsPage() {
                   onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = active ? "white" : "#fafafa"}
                   style={{ background: active ? "white" : "#fafafa" }}
                 >
-                  <td style={{ ...tdStyle, fontFamily: "monospace", fontWeight: 700, color: active ? "#7c3aed" : "var(--muted)" }}>{b.batchNumber}</td>
+                  <td style={{ ...tdStyle, fontFamily: "inherit", fontWeight: 700, color: active ? "#7c3aed" : "var(--muted)" }}>{b.batchNumber}</td>
                   <td style={{ ...tdStyle, fontWeight: 500 }}>{b.stockItem.name}</td>
-                  <td style={{ ...tdStyle, color: "var(--muted)", fontFamily: "monospace", fontSize: 11 }}>{b.stockItem.code}</td>
+                  <td style={{ ...tdStyle, color: "var(--muted)", fontFamily: "inherit", fontSize: 11 }}>{b.stockItem.code}</td>
                   <td style={{ ...tdStyle, color: "var(--muted)" }}>{b.stockItem.unit}</td>
                   <td style={{ ...tdStyle, whiteSpace: "nowrap" }}>{new Date(b.purchasedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
                   <td style={{ ...tdStyle, textAlign: "right", fontWeight: 600 }}>{b.qty}</td>
@@ -1354,11 +1354,11 @@ export default function ReportsPage() {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = "var(--bg)"}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "white"}
               >
-                <td style={{ ...tdStyle, fontWeight: 700, color: "#be123c", fontFamily: "monospace" }}>{p.poNumber}</td>
+                <td style={{ ...tdStyle, fontWeight: 700, color: "#be123c", fontFamily: "inherit" }}>{p.poNumber}</td>
                 <td style={{ ...tdStyle, fontWeight: 500 }}>{p.supplierName}</td>
                 <td style={{ ...tdStyle, color: "var(--muted)", whiteSpace: "nowrap" }}>{fmt(p.dateTime)}</td>
                 <td style={{ ...tdStyle }}>{p.stockName}</td>
-                <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 11, color: "var(--muted)" }}>{p.stockCode || "—"}</td>
+                <td style={{ ...tdStyle, fontFamily: "inherit", fontSize: 11, color: "var(--muted)" }}>{p.stockCode || "—"}</td>
                 <td style={{ ...tdStyle, textAlign: "center", fontWeight: 600 }}>{p.qty}</td>
                 <td style={{ ...tdStyle, textAlign: "right" }}>{money(p.unitPrice)}</td>
                 <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{money(p.total)}</td>
@@ -1403,13 +1403,13 @@ export default function ReportsPage() {
       </div>
 
       {/* Report Cards Grid */}
-      <div style={{
+      <div className="responsive-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
         gap: 18,
       }}>
         {REPORT_CARDS.map((card) => (
-          <div
+          <button type="button" className="report-card"
             key={card.id}
             onClick={() => openReport(card.id)}
             style={{
@@ -1437,14 +1437,14 @@ export default function ReportsPage() {
             }}
           >
             {/* Background accent */}
-            <div style={{
+            <div className="report-card-accent" style={{
               position: "absolute", top: -20, right: -20,
               width: 80, height: 80, borderRadius: "50%",
               background: card.color, opacity: .07,
             }} />
 
             {/* Icon */}
-            <div style={{
+            <div className="report-card-icon" style={{
               width: 44, height: 44, borderRadius: 12,
               background: card.color + "18",
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -1454,7 +1454,7 @@ export default function ReportsPage() {
             </div>
 
             {/* Badge */}
-            <div style={{
+            <div className="report-card-badge" style={{
               display: "inline-block",
               background: card.color + "12",
               color: card.color,
@@ -1467,14 +1467,14 @@ export default function ReportsPage() {
             <p style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>{card.desc}</p>
 
             {/* Generate arrow */}
-            <div style={{
+            <div className="report-card-action" style={{
               marginTop: 16, display: "flex", alignItems: "center", gap: 6,
               fontSize: 12, fontWeight: 600, color: card.color,
             }}>
               <i className="fa-solid fa-arrow-right" style={{ fontSize: 11 }}></i>
               Generate Report
             </div>
-          </div>
+          </button>
         ))}
       </div>
 

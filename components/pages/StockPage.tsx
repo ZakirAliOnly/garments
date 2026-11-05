@@ -480,7 +480,7 @@ export default function StockPage() {
 
   return (
     <div style={{ animation: "pgIn .3s cubic-bezier(.16,1,.3,1)" }}>
-      <div style={{ display: "flex", borderBottom: "2px solid var(--bg2)", marginBottom: 20, gap: 4 }}>
+      <div className="page-tabs" style={{ display: "flex", borderBottom: "2px solid var(--bg2)", marginBottom: 20, gap: 4 }}>
         {([
           { id: "stock", icon: "fa-boxes-stacked", label: "Stock / Inventory" },
           { id: "batches", icon: "fa-layer-group", label: "Batches" },
@@ -488,6 +488,7 @@ export default function StockPage() {
         ] as const).map(t => (
           <button
             key={t.id}
+            className="module-tab" aria-pressed={activeTab === t.id}
             onClick={() => setActiveTab(t.id)}
             style={{
               padding: "10px 22px", fontSize: 13, fontWeight: 600, fontFamily: "inherit",
@@ -506,7 +507,7 @@ export default function StockPage() {
       {activeTab === "stock" && (
       <>
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
         {[
           { bg: "var(--blue5)", color: "var(--blue)", icon: "fa-boxes-stacked", value: String(totalItems), label: "Total Items" },
           { bg: "#fff8e6", color: "var(--gold)", icon: "fa-triangle-exclamation", value: String(lowStockCount + outCount), label: "Low / Out of Stock" },
@@ -554,7 +555,7 @@ export default function StockPage() {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Summary cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+            <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
               {[
                 { bg: "var(--blue5)", border: "var(--blue3)", color: "var(--blue)", icon: "fa-layer-group", value: String(totalBatches), label: "Total Batches" },
                 { bg: "#e6f9f2", border: "#b7ebd5", color: "var(--green)", icon: "fa-circle-check", value: String(activeBatches), label: "Active Batches" },
@@ -616,13 +617,13 @@ export default function StockPage() {
                         return (
                           <tr key={b.id} style={{ borderBottom: isLast ? "none" : "1px solid var(--bg2)", background: isActive ? "white" : "#fafafa" }}>
                             <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, background: isActive ? "var(--ink)" : "var(--bg3)", color: isActive ? "var(--blue4)" : "var(--muted)", padding: "3px 9px", borderRadius: 5, display: "inline-block" }}>
+                              <span style={{ fontFamily: "inherit", fontSize: 11, fontWeight: 700, background: isActive ? "var(--ink)" : "var(--bg3)", color: isActive ? "var(--blue4)" : "var(--muted)", padding: "3px 9px", borderRadius: 5, display: "inline-block" }}>
                                 {b.batchNumber}
                               </span>
                             </td>
                             <td style={{ padding: "10px 14px", fontWeight: 600, fontSize: 13 }}>{b.stockItem.name}</td>
                             <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontFamily: "monospace", fontSize: 10, color: "var(--muted)", background: "var(--bg2)", padding: "2px 6px", borderRadius: 4 }}>{b.stockItem.code}</span>
+                              <span style={{ fontFamily: "inherit", fontSize: 10, color: "var(--muted)", background: "var(--bg2)", padding: "2px 6px", borderRadius: 4 }}>{b.stockItem.code}</span>
                             </td>
                             <td style={{ padding: "10px 14px", fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>
                               {new Date(b.purchasedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
@@ -664,7 +665,7 @@ export default function StockPage() {
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", marginBottom: 16, display: "flex", alignItems: "center", gap: 9 }}>
               <i className="fa-solid fa-filter" style={{ color: "var(--blue2)", fontSize: 14 }}></i> Filters
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: 12, alignItems: "flex-end" }}>
+            <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: 12, alignItems: "flex-end" }}>
               <div>
                 <label style={labelStyle}>From Date</label>
                 <input type="date" value={rptFrom} onChange={e => setRptFrom(e.target.value)} style={inputStyle} />
@@ -693,7 +694,7 @@ export default function StockPage() {
                 <input type="text" placeholder="Customer name..." value={rptCustomer} onChange={e => setRptCustomer(e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <button
+                <button data-ui-action="secondary"
                   onClick={() => { setRptFrom(todayIsoDate()); setRptTo(todayIsoDate()); setRptType(""); setRptProduct(""); setRptCustomer(""); }}
                   style={{ padding: "9px 16px", border: "1.5px solid var(--bg2)", borderRadius: "var(--r2)", background: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--ink3)", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
                 >
@@ -703,7 +704,7 @@ export default function StockPage() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+          <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
             <div style={{ background: "var(--blue5)", border: "1.5px solid var(--blue3)", borderRadius: 12, padding: "16px 20px" }}>
               <div style={{ fontSize: 11, color: "var(--ink3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".4px" }}>Sold Qty</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--ink)", marginTop: 4 }}>{soldTotals.qty}</div>
@@ -749,7 +750,7 @@ export default function StockPage() {
                     {filteredSoldRows.map((row, i) => (
                       <tr key={row.id} style={{ borderBottom: i < filteredSoldRows.length - 1 ? "1px solid var(--bg2)" : "none" }}>
                         <td style={{ padding: "10px 12px" }}>
-                          <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 5, whiteSpace: "nowrap", display: "inline-block" }}>{row.invNumber}</span>
+                          <span style={{ fontFamily: "inherit", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 5, whiteSpace: "nowrap", display: "inline-block" }}>{row.invNumber}</span>
                         </td>
                         <td style={{ padding: "10px 12px", fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>{new Date(row.invoiceDate).toLocaleDateString()}</td>
                         <td style={{ padding: "10px 12px", fontSize: 13, fontWeight: 600 }}>{row.customerName}</td>
@@ -780,7 +781,7 @@ export default function StockPage() {
             <i className="fa-solid fa-boxes-stacked" style={{ color: "var(--blue2)", fontSize: 15 }}></i>
             Stock / Inventory {!loading && <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 500 }}>({items.length})</span>}
           </div>
-          <button onClick={openModal} style={{ padding: "8px 16px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", boxShadow: "0 4px 16px rgba(16,87,160,.3)" }}>
+          <button data-ui-action="primary" onClick={openModal} style={{ padding: "8px 16px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-primary)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(16,87,160,.3)" }}>
             <i className="fa-solid fa-plus"></i> Add Stock Item
           </button>
         </div>
@@ -847,7 +848,7 @@ export default function StockPage() {
                           <>
                             <tr style={{ borderBottom: !hasMoreRows && !isBatchOpen && !isLast ? "1px solid var(--bg2)" : "none", background: isExpanded || isBatchOpen ? "var(--bg)" : "white" }}>
                               <td style={{ padding: "11px 14px" }}>
-                                <span style={{ fontFamily: "monospace", fontSize: 10, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "2px 7px", borderRadius: 5, letterSpacing: ".5px", display: "inline-block" }}>
+                                <span style={{ fontFamily: "inherit", fontSize: 10, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "2px 7px", borderRadius: 5, letterSpacing: ".5px", display: "inline-block" }}>
                                   {item.sku ?? item.code}
                                 </span>
                                 {!item.hasVariants && <StockBarcode itemId={item.id} sku={item.sku ?? item.code} quantity={item.quantity} />}
@@ -886,7 +887,7 @@ export default function StockPage() {
                                   <button title="Edit" onClick={() => openEdit(item)} style={{ width: 30, height: 30, borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#fff8e6", color: "var(--gold)" }}>
                                     <i className="fa-solid fa-pen"></i>
                                   </button>
-                                  <button title="Delete" onClick={() => setDeleteTarget({ id: item.id, name: item.name, sku: item.sku })} style={{ width: 30, height: 30, borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#fff0f0", color: "var(--red)" }}>
+                                  <button data-ui-action="icon" title="Delete" onClick={() => setDeleteTarget({ id: item.id, name: item.name, sku: item.sku })} style={{ width: 30, height: 30, borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#fff0f0", color: "var(--red)" }}>
                                     <i className="fa-solid fa-trash"></i>
                                   </button>
                                 </div>
@@ -896,7 +897,7 @@ export default function StockPage() {
                             {isExpanded && item.variants.map((v, vi) => (
                               <tr key={`${item.id}-var-${v.id}`} style={{ background: "#f8faff", borderBottom: vi < item.variants.length - 1 || isBatchOpen || !isLast ? "1px solid var(--bg2)" : "none" }}>
                                 <td style={{ padding: "8px 14px 8px 24px" }}>
-                                  <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, background: "#e0e7ff", color: "#3730a3", padding: "2px 6px", borderRadius: 4, letterSpacing: ".4px", display: "inline-block" }}>
+                                  <span style={{ fontFamily: "inherit", fontSize: 9, fontWeight: 700, background: "#e0e7ff", color: "#3730a3", padding: "2px 6px", borderRadius: 4, letterSpacing: ".4px", display: "inline-block" }}>
                                     {v.sku}
                                   </span>
                                   <StockBarcode itemId={item.id} variantId={v.id} sku={v.sku} quantity={v.quantity} />
@@ -952,7 +953,7 @@ export default function StockPage() {
                                           return (
                                             <tr key={b.id} style={{ borderBottom: bi < thisBatches.length - 1 ? "1px solid #ddd6fe" : "none", background: active ? "white" : "#faf9ff", opacity: active ? 1 : 0.6 }}>
                                               <td style={{ padding: "6px 10px" }}>
-                                                <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 10, background: active ? "#7c3aed" : "var(--bg3)", color: active ? "white" : "var(--muted)", padding: "2px 7px", borderRadius: 4 }}>{b.batchNumber}</span>
+                                                <span style={{ fontFamily: "inherit", fontWeight: 700, fontSize: 10, background: active ? "#7c3aed" : "var(--bg3)", color: active ? "white" : "var(--muted)", padding: "2px 7px", borderRadius: 4 }}>{b.batchNumber}</span>
                                               </td>
                                               <td style={{ padding: "6px 10px", color: "var(--muted)", whiteSpace: "nowrap" }}>{new Date(b.purchasedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
                                               <td style={{ padding: "6px 10px", textAlign: "right", fontWeight: 600 }}>{b.qty}</td>
@@ -1025,7 +1026,7 @@ export default function StockPage() {
                 {skuPreview && (
                   <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
                     <i className="fa-solid fa-barcode"></i>
-                    Auto SKU: <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--blue)", background: "var(--blue5)", padding: "1px 7px", borderRadius: 4 }}>{skuPreview}</span>
+                    Auto SKU: <span style={{ fontFamily: "inherit", fontWeight: 700, color: "var(--blue)", background: "var(--blue5)", padding: "1px 7px", borderRadius: 4 }}>{skuPreview}</span>
                     <span style={{ opacity: .6 }}>(unique, generated on save)</span>
                   </div>
                 )}
@@ -1064,7 +1065,7 @@ export default function StockPage() {
                           onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addCustomSize())}
                           style={{ padding: "5px 10px", border: "1.5px solid var(--bg3)", borderRadius: 20, fontSize: 12, fontFamily: "inherit", outline: "none", width: 80, background: "white" }}
                         />
-                        <button type="button" onClick={addCustomSize} style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", border: "1.5px solid var(--bg3)", background: "white", color: "var(--blue)" }}>+ Add</button>
+                        <button data-ui-action="secondary" type="button" onClick={addCustomSize} style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", border: "1.5px solid var(--bg3)", background: "white", color: "var(--blue)" }}>+ Add</button>
                       </div>
                     </div>
                   </div>
@@ -1088,7 +1089,7 @@ export default function StockPage() {
                           onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addColor())}
                           style={{ padding: "5px 10px", border: "1.5px solid var(--bg3)", borderRadius: 20, fontSize: 12, fontFamily: "inherit", outline: "none", width: 120, background: "white" }}
                         />
-                        <button type="button" onClick={addColor} style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", border: "1.5px solid var(--bg3)", background: "white", color: "var(--blue)" }}>+ Add</button>
+                        <button data-ui-action="secondary" type="button" onClick={addColor} style={{ padding: "5px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", border: "1.5px solid var(--bg3)", background: "white", color: "var(--blue)" }}>+ Add</button>
                       </div>
                     </div>
                   </div>
@@ -1123,7 +1124,7 @@ export default function StockPage() {
                               return (
                                 <tr key={vi} style={{ borderBottom: vi < variants.length - 1 ? "1px solid var(--bg2)" : "none" }}>
                                   <td style={{ padding: "8px 12px" }}>
-                                    <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, color: "#3730a3", background: "#e0e7ff", padding: "2px 6px", borderRadius: 4 }}>{varSku}</span>
+                                    <span style={{ fontFamily: "inherit", fontSize: 9, fontWeight: 700, color: "#3730a3", background: "#e0e7ff", padding: "2px 6px", borderRadius: 4 }}>{varSku}</span>
                                   </td>
                                   {form.selectedSizes.length > 0 && <td style={{ padding: "8px 12px", fontSize: 12, fontWeight: 700 }}>{v.size}</td>}
                                   {form.colors.length > 0 && <td style={{ padding: "8px 12px", fontSize: 12 }}>{v.color}</td>}
@@ -1159,7 +1160,7 @@ export default function StockPage() {
                 </div>
               )}
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <div>
                   <label style={labelStyle}>Category *</label>
                   <select style={{ ...inputStyle, cursor: "pointer" }} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} required>
@@ -1200,7 +1201,7 @@ export default function StockPage() {
               </div>
 
               <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                <button type="submit" disabled={saving} style={{ padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", opacity: saving ? .7 : 1 }}>
+                <button data-ui-action="primary" type="submit" disabled={saving} style={{ padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-primary)", color: "white", border: "none", opacity: saving ? .7 : 1 }}>
                   <i className={`fa-solid ${saving ? "fa-spinner fa-spin" : "fa-floppy-disk"}`}></i>
                   {saving ? "Saving..." : "Add to Stock"}
                 </button>
@@ -1227,7 +1228,7 @@ export default function StockPage() {
                   Are you sure you want to delete <strong style={{ color: "var(--ink)" }}>{deleteTarget.name}</strong>?
                   {deleteTarget.sku && (
                     <div style={{ marginTop: 6 }}>
-                      <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "2px 8px", borderRadius: 5 }}>{deleteTarget.sku}</span>
+                      <span style={{ fontFamily: "inherit", fontSize: 11, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "2px 8px", borderRadius: 5 }}>{deleteTarget.sku}</span>
                     </div>
                   )}
                   <div style={{ marginTop: 8, fontSize: 12, color: "var(--red)", fontWeight: 500 }}>This will also delete all variants. Cannot be undone.</div>
@@ -1259,12 +1260,12 @@ export default function StockPage() {
             </div>
             <form onSubmit={handleEditSave} style={{ padding: 24 }}>
               {/* Locked SKU banner */}
-              <div style={{ display: "grid", gridTemplateColumns: editTarget.hasVariants ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 20, padding: 14, background: "var(--bg)", borderRadius: 12, border: "1.5px solid var(--bg2)" }}>
+              <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: editTarget.hasVariants ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 20, padding: 14, background: "var(--bg)", borderRadius: 12, border: "1.5px solid var(--bg2)" }}>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "var(--muted)", letterSpacing: ".4px", textTransform: "uppercase", marginBottom: 5, display: "flex", alignItems: "center", gap: 5 }}>
                     <i className="fa-solid fa-lock" style={{ fontSize: 9 }}></i> SKU (locked)
                   </div>
-                  <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 6, display: "inline-block" }}>{editTarget.sku ?? editTarget.code}</span>
+                  <span style={{ fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: "var(--ink)", color: "var(--blue4)", padding: "3px 10px", borderRadius: 6, display: "inline-block" }}>{editTarget.sku ?? editTarget.code}</span>
                 </div>
                 {!editTarget.hasVariants && (
                   <div>
@@ -1288,7 +1289,7 @@ export default function StockPage() {
                 </div>
               )}
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <div style={{ gridColumn: "span 2" }}>
                   <label style={labelStyle}>Item Name *</label>
                   <input style={inputStyle} placeholder="Item name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} required />
@@ -1349,7 +1350,7 @@ export default function StockPage() {
                         {editTarget.variants.map((v, vi) => (
                           <tr key={v.id} style={{ borderBottom: vi < editTarget.variants.length - 1 ? "1px solid var(--bg2)" : "none", background: "white" }}>
                             <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, background: "#e0e7ff", color: "#3730a3", padding: "2px 7px", borderRadius: 4 }}>{v.sku}</span>
+                              <span style={{ fontFamily: "inherit", fontSize: 9, fontWeight: 700, background: "#e0e7ff", color: "#3730a3", padding: "2px 7px", borderRadius: 4 }}>{v.sku}</span>
                             </td>
                             {editTarget.variants.some(x => x.size) && (
                               <td style={{ padding: "10px 14px" }}>
@@ -1411,7 +1412,7 @@ export default function StockPage() {
                   <i className="fa-solid fa-circle-plus"></i> Add New Variant
                 </div>
                 <div style={{ background: "var(--blue5)", border: "1.5px solid rgba(46,143,224,.25)", borderRadius: 12, padding: 14 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 80px 88px 88px auto", gap: 8, alignItems: "flex-end" }}>
+                  <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 80px 88px 88px auto", gap: 8, alignItems: "flex-end" }}>
                     <div>
                       <label style={{ ...labelStyle, fontSize: 10, color: "var(--blue)", marginBottom: 3 }}>Size</label>
                       <input
@@ -1461,7 +1462,7 @@ export default function StockPage() {
                       />
                     </div>
                     <div style={{ paddingBottom: 1 }}>
-                      <button type="button" onClick={addEditVariant}
+                      <button data-ui-action="primary" type="button" onClick={addEditVariant}
                         style={{ padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: "var(--blue)", color: "white", border: "none", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5 }}>
                         <i className="fa-solid fa-plus"></i> Add
                       </button>
@@ -1491,7 +1492,7 @@ export default function StockPage() {
                             <td style={{ padding: "8px 12px", fontSize: 11, color: "var(--red)" }}>{v.purchasePrice ? `Rs ${v.purchasePrice}` : <span style={{ opacity: .5 }}>base</span>}</td>
                             <td style={{ padding: "8px 12px", fontSize: 11, color: "var(--green)" }}>{v.salesPrice ? `Rs ${v.salesPrice}` : <span style={{ opacity: .5 }}>base</span>}</td>
                             <td style={{ padding: "8px 12px" }}>
-                              <button type="button" onClick={() => setEditNewVariants(prev => prev.filter((_, i) => i !== vi))}
+                              <button data-ui-action="icon" type="button" onClick={() => setEditNewVariants(prev => prev.filter((_, i) => i !== vi))}
                                 style={{ background: "#fff0f0", border: "none", color: "var(--red)", borderRadius: 6, width: 26, height: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>
                                 <i className="fa-solid fa-xmark"></i>
                               </button>
@@ -1505,7 +1506,7 @@ export default function StockPage() {
               </div>
 
               <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                <button type="submit" disabled={editSaving} style={{ padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: editSaving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#b45309,#d97706)", color: "white", border: "none", opacity: editSaving ? .7 : 1 }}>
+                <button data-ui-action="primary" type="submit" disabled={editSaving} style={{ padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 600, fontFamily: "inherit", cursor: editSaving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-primary)", color: "white", border: "none", opacity: editSaving ? .7 : 1 }}>
                   <i className={`fa-solid ${editSaving ? "fa-spinner fa-spin" : "fa-floppy-disk"}`}></i>
                   {editSaving ? "Saving..." : "Save Changes"}
                 </button>

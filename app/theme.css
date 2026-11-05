@@ -1,0 +1,466 @@
+/* Shared visual language for every module. Semantic colors keep their meaning. */
+:root {
+  --ink: #082549;
+  --ink2: #073b68;
+  --ink3: #124779;
+  --blue: #0064d5;
+  --blue2: #0088f7;
+  --blue3: #00a6e9;
+  --blue4: #51cdff;
+  --blue5: #e7f3ff;
+  --bg: #f0f8ff;
+  --bg2: #e4eef9;
+  --bg3: #c7daef;
+  --border: #d5e4f3;
+  --muted: #617da1;
+  --green: #009e67;
+  --red: #d93449;
+  --surface: #fff;
+  --gradient-primary: linear-gradient(135deg, #0877e8, #005ac5);
+  --gradient-secondary: linear-gradient(135deg, #f1f8ff, #e2efff);
+  --gradient-success: linear-gradient(135deg, #0aaf79, #008c5b);
+  --gradient-danger: linear-gradient(135deg, #e64659, #c72c42);
+  --control-radius: 10px;
+  --card-radius: 18px;
+  --control-height: 42px;
+  --action-shadow: 0 3px 8px #0064d51a;
+}
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+body {
+  font-family: var(--font-poppins), "Poppins", sans-serif;
+}
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+.workspace {
+  width: calc(100% - var(--sw));
+  min-width: 0;
+}
+.workspace > div,
+.workspace > section {
+  min-width: 0;
+}
+.app-header h1 {
+  font-size: 27px;
+  font-weight: 700;
+}
+.workspace h1,
+.finance-page-heading h2,
+.activity-title h2 {
+  color: var(--ink);
+  font-size: 25px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px;
+}
+.workspace h2,
+.workspace h3,
+.workspace h4 {
+  color: var(--ink);
+}
+.workspace input:not([type="checkbox"]):not([type="radio"]),
+.workspace select,
+.workspace textarea {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background-color: #fbfdff;
+  border-color: var(--border) !important;
+  border-radius: var(--control-radius) !important;
+}
+.workspace input:focus,
+.workspace select:focus,
+.workspace textarea:focus {
+  border-color: var(--blue2) !important;
+}
+.workspace input::placeholder,
+.workspace textarea::placeholder {
+  color: #7b91ad;
+}
+.workspace table {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.workspace thead tr {
+  background: var(--ink);
+}
+.workspace thead th {
+  background: var(--ink);
+  color: white !important;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+/* Invoice item-entry tables retain the light header from the invoice reference. */
+.invoice-editor thead th {
+  background: var(--bg2);
+  color: var(--ink) !important;
+}
+.workspace tbody td {
+  border-color: #e6eff8;
+}
+.workspace button,
+.finance-modal button {
+  font-weight: 600;
+}
+/* These selectors also normalize legacy inline button styles while preserving
+   their event handlers, conditional visibility and disabled states. */
+[data-ui-action]:not([data-ui-action="icon"]),
+.finance-button,
+.activity-control,
+.scan-button,
+.product-search-button,
+.outline-action {
+  min-height: var(--control-height) !important;
+  border-radius: var(--control-radius) !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  line-height: 1.4;
+  font-weight: 600 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+[data-ui-action="primary"],
+.finance-button:not(.secondary):not(.success),
+.scan-button,
+.activity-control.selected,
+.invoice-heading-controls .new-invoice-button,
+.complete-invoice-button {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: var(--action-shadow) !important;
+}
+[data-ui-action="secondary"],
+.finance-button.secondary,
+.activity-control,
+.product-search-button,
+.outline-action {
+  background: #fff !important;
+  color: var(--blue) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+/* Selected filters use the same gradient as primary actions. */
+.activity-control.selected {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+}
+[data-ui-action="success"],
+.finance-button.success {
+  background: var(--gradient-success) !important;
+  color: white !important;
+  border-color: transparent !important;
+  box-shadow: 0 3px 8px #009e671a !important;
+}
+[data-ui-action="danger"] {
+  background: var(--gradient-danger) !important;
+  color: white !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+[data-ui-action="icon"],
+.finance-icon-button {
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 8px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.workspace button:disabled,
+.finance-modal button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.workspace button:focus-visible,
+.finance-modal button:focus-visible {
+  outline: 3px solid #80c5ff;
+  outline-offset: 3px;
+}
+.worker-actions .finance-button,
+.user-access-actions .finance-button,
+.permission-toolbar .finance-button {
+  min-height: 36px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+}
+.finance-page-heading,
+.activity-heading {
+  margin-bottom: 24px;
+}
+.finance-page-heading p,
+.activity-heading p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.finance-page,
+.activity-page {
+  padding: 4px 0 24px;
+}
+.surface,
+.worker-card,
+.method-card,
+.payroll-stats article,
+.activity-stats > div {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--sh);
+}
+.finance-section-title {
+  color: var(--ink2);
+}
+.finance-info {
+  color: var(--ink2);
+  background: var(--blue5);
+  border-color: var(--border);
+}
+.finance-form label,
+.finance-form-grid > label {
+  color: var(--ink2);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.finance-form input,
+.finance-form select,
+.finance-form textarea {
+  font-family: inherit;
+  font-weight: 400;
+}
+.finance-modal {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.finance-modal h2 {
+  color: var(--ink);
+}
+.worker-avatar {
+  background: var(--gradient-primary);
+}
+.worker-role,
+.worker-details .worker-role {
+  color: var(--blue);
+  background: var(--blue5);
+}
+.worker-figures strong,
+.payroll-stats strong,
+.method-balance strong {
+  font-variant-numeric: tabular-nums;
+}
+/* Activity belongs to the dashboard palette rather than a separate navy theme. */
+.activity-title > span {
+  background: var(--blue5);
+  color: var(--blue2);
+}
+.activity-table th {
+  background: var(--ink);
+}
+.activity-table-wrap {
+  border-color: var(--border);
+  border-radius: var(--card-radius);
+}
+.activity-control {
+  color: var(--blue);
+}
+.activity-stats span,
+.activity-table small,
+.activity-footnote,
+.activity-pagination {
+  color: var(--muted);
+}
+.activity-blue {
+  color: var(--blue);
+}
+.activity-green,
+.positive {
+  color: var(--green);
+}
+.activity-red,
+.negative {
+  color: var(--red);
+}
+.activity-badge.blue,
+.activity-avatar {
+  color: var(--blue);
+  background: var(--blue5);
+  border-color: #b9d9fc;
+}
+.activity-user strong {
+  font-size: 12px;
+}
+.activity-badge.green {
+  color: #008653;
+  background: #ecfbf3;
+  border-color: #b5e8cf;
+}
+.activity-badge.red {
+  color: #c22d42;
+  background: #fff1f3;
+  border-color: #f7c5cd;
+}
+.activity-table .activity-amount {
+  font-family: inherit;
+}
+.quick-actions button,
+.invoice-action-panel button,
+.product-search-button,
+.invoice-item-actions > button:first-child {
+  background: var(--gradient-secondary) !important;
+  color: var(--ink2) !important;
+  border-color: #bdd7f4 !important;
+}
+.quick-actions button i,
+.invoice-action-panel i,
+.section-heading h2 i {
+  color: var(--blue2);
+}
+.complete-invoice-button {
+  font-size: 17px;
+  font-weight: 600;
+}
+.invoice-editor button {
+  font-family: inherit;
+}
+.report-card {
+  text-align: left;
+  color: var(--ink);
+  font-family: inherit;
+  border-color: var(--border) !important;
+}
+.report-card:hover,
+.report-card:focus-visible {
+  border-color: var(--blue2) !important;
+}
+.report-card-icon,
+.report-card-badge {
+  background: var(--blue5) !important;
+  color: var(--blue) !important;
+}
+.report-card i,
+.report-card-action {
+  color: var(--blue) !important;
+}
+.report-card-accent {
+  background: var(--blue) !important;
+}
+.responsive-grid {
+  min-width: 0;
+}
+.responsive-grid > * {
+  min-width: 0;
+}
+.page-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+.page-tabs > button {
+  flex-shrink: 0;
+}
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.page-toolbar > div {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.app-footer {
+  font-family: inherit;
+}
+@media (max-width: 900px) {
+  .finance-page-heading,
+  .activity-heading {
+    flex-wrap: wrap;
+  }
+  .header-search {
+    width: min(400px, 35vw);
+  }
+}
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .page-toolbar {
+    align-items: flex-start !important;
+  }
+  .page-toolbar > div {
+    width: 100%;
+  }
+  .finance-page-heading .finance-toolbar {
+    flex-wrap: wrap;
+  }
+  .finance-page-heading h2,
+  .activity-title h2,
+  .workspace h1 {
+    font-size: 22px !important;
+  }
+  .app-header h1 {
+    font-size: 22px;
+  }
+  .activity-stats strong {
+    font-size: 18px;
+  }
+  .activity-filters > div {
+    gap: 7px;
+  }
+  .activity-filters .activity-control {
+    padding: 8px 11px !important;
+    min-height: 38px !important;
+    font-size: 12px !important;
+  }
+  .app-footer {
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 8px 14px !important;
+    font-size: 10px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace *,
+  .finance-modal * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.module-tab {
+  min-height: 44px;
+  border-radius: var(--control-radius) !important;
+  font-size: 13px !important;
+  padding: 10px 18px !important;
+}
+.module-tab[aria-pressed="true"] {
+  background: var(--gradient-primary) !important;
+  border-bottom-color: transparent !important;
+  color: white !important;
+  box-shadow: var(--action-shadow);
+}
+
+@media (max-width: 768px) {
+  .responsive-grid > [style*="grid-column"] {
+    grid-column: auto !important;
+  }
+}
+[data-ui-size="compact"] {
+  min-height: 32px !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  border-radius: 8px !important;
+}

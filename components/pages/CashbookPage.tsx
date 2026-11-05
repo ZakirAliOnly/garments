@@ -105,7 +105,7 @@ function InvoiceModal({ inv, onClose }: { inv: InvoicePreview; onClose: () => vo
           </div>
 
           {/* Customer info */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+          <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
             <div>
               <span style={lbl}>Customer</span>
               <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{inv.customerName}</div>
@@ -265,7 +265,7 @@ function EntryFormModal({ title, icon, initial, onClose, onSave }: {
           </div>
 
           {/* 4. Amount + 5. Credit / Debit */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+          <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div>
               <label style={lbl}>Amount (Rs) *</label>
               <input type="number" min="0" placeholder="0" value={form.amount} onChange={e => set("amount", e.target.value)} style={inp} />
@@ -291,12 +291,12 @@ function EntryFormModal({ title, icon, initial, onClose, onSave }: {
           </div>
 
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={onClose} style={{ padding: "9px 20px", border: "1.5px solid var(--bg2)", borderRadius: 8, background: "white", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--ink3)" }}>
+            <button data-ui-action="secondary" onClick={onClose} style={{ padding: "9px 20px", border: "1.5px solid var(--bg2)", borderRadius: 8, background: "white", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "var(--ink3)" }}>
               Cancel
             </button>
-            <button
+            <button data-ui-action="primary"
               onClick={handleSave} disabled={saving}
-              style={{ padding: "9px 20px", background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: saving ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7 }}
+              style={{ padding: "9px 20px", background: "var(--gradient-primary)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: saving ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7 }}
             >
               <i className="fa-solid fa-floppy-disk"></i> {saving ? "Saving..." : "Save Entry"}
             </button>
@@ -389,9 +389,9 @@ export default function CashbookPage() {
   }
 
   const summaryCards = [
-    { label: "Total Income", value: Rs(totals.totalIncome), icon: "fa-arrow-down", bg: "linear-gradient(135deg,#1a8f5a,#22c57c)" },
-    { label: "Total Expense", value: Rs(totals.totalExpense), icon: "fa-arrow-up", bg: "linear-gradient(135deg,#b03030,#e05050)" },
-    { label: "Net Balance", value: Rs(totals.netBalance), icon: "fa-scale-balanced", bg: "linear-gradient(135deg,var(--ink3),var(--blue2))" },
+    { label: "Total Income", value: Rs(totals.totalIncome), icon: "fa-arrow-down", bg: "var(--gradient-primary)" },
+    { label: "Total Expense", value: Rs(totals.totalExpense), icon: "fa-arrow-up", bg: "var(--gradient-danger)" },
+    { label: "Net Balance", value: Rs(totals.netBalance), icon: "fa-scale-balanced", bg: "var(--gradient-primary)" },
   ];
 
   /* Derive entry type label */
@@ -402,7 +402,7 @@ export default function CashbookPage() {
   return (
     <div style={{ animation: "pgIn .3s cubic-bezier(.16,1,.3,1)" }}>
       {/* ── Summary Cards ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
         {summaryCards.map((s) => (
           <div
             key={s.label}
@@ -430,7 +430,7 @@ export default function CashbookPage() {
       {/* ── Entries Table ── */}
       <div style={card}>
         {/* Card header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, paddingBottom: 14, borderBottom: "1.5px solid var(--bg2)" }}>
+        <div className="page-toolbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, paddingBottom: 14, borderBottom: "1.5px solid var(--bg2)" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", display: "flex", alignItems: "center", gap: 9 }}>
             <i className="fa-solid fa-book-open" style={{ color: "var(--blue2)", fontSize: 14 }}></i>
             Cashbook Entries
@@ -456,16 +456,16 @@ export default function CashbookPage() {
               title="To date"
             />
             {(filterFrom || filterTo || filterMethodId || filterType !== "all") && (
-              <button
+              <button data-ui-action="secondary"
                 onClick={() => { setFilterType("all"); setFilterFrom(""); setFilterTo(""); setFilterMethodId(""); }}
                 style={{ padding: "7px 12px", border: "1.5px solid var(--bg2)", borderRadius: 20, fontFamily: "inherit", fontSize: 12, background: "white", color: "var(--muted)", cursor: "pointer" }}
               >
                 Clear
               </button>
             )}
-            <button
+            <button data-ui-action="primary"
               onClick={() => setShowNewEntry(true)}
-              style={{ padding: "8px 16px", background: "linear-gradient(135deg,var(--blue),var(--blue2))", color: "white", border: "none", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 10px rgba(16,87,160,.3)" }}
+              style={{ padding: "8px 16px", background: "var(--gradient-primary)", color: "white", border: "none", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 10px rgba(16,87,160,.3)" }}
             >
               <i className="fa-solid fa-plus"></i> New Entry
             </button>
@@ -581,7 +581,7 @@ export default function CashbookPage() {
                       <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
                         {/* Edit — only for manual (ledger) entries */}
                         {!entry.invoiceId && (!entry.sourceType || entry.sourceType === "manual") && (
-                          <button
+                          <button data-ui-action="icon"
                             onClick={() => setEditEntry(entry)}
                             title="Edit Entry"
                             style={{ ...actionBtn, border: "1.5px solid var(--bg2)", background: "white", color: "var(--blue2)" }}
@@ -591,7 +591,7 @@ export default function CashbookPage() {
                         )}
                         {/* View Invoice */}
                         {entry.invoice && (
-                          <button
+                          <button data-ui-action="icon"
                             onClick={() => setViewInv(entry.invoice)}
                             title="View Invoice"
                             style={{ ...actionBtn, border: "1.5px solid var(--bg2)", background: "white", color: "var(--blue2)" }}
@@ -601,7 +601,7 @@ export default function CashbookPage() {
                         )}
                         {/* Delete — only for manual (ledger) entries */}
                         {!entry.invoiceId && (!entry.sourceType || entry.sourceType === "manual") && (
-                          <button
+                          <button data-ui-action="icon"
                             onClick={() => deleteEntry(entry.id)}
                             disabled={deleting === entry.id}
                             title="Delete Entry"

@@ -524,17 +524,17 @@ export default function RefundPage() {
           <i className="fa-solid fa-rotate-left" style={{ color: "var(--blue2)", fontSize: 15 }}></i>
           Refund & Replace
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 180px 1fr", gap: 10, alignItems: "end" }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 180px 1fr", gap: 10, alignItems: "end" }}>
           <div>
             <label style={labelStyle}>Invoice Number</label>
             <input
-              style={{ ...inputStyle, fontFamily: "monospace", fontWeight: 700 }}
+              style={{ ...inputStyle, fontFamily: "inherit", fontWeight: 700 }}
               placeholder="INV-0001"
               value={invNumber}
               onChange={(e) => setInvNumber(e.target.value)}
             />
           </div>
-          <button
+          <button data-ui-action="primary"
             onClick={lookupInvoiceByNumber}
             disabled={lookupLoading}
             style={{
@@ -544,7 +544,7 @@ export default function RefundPage() {
               fontWeight: 600,
               fontFamily: "inherit",
               cursor: lookupLoading ? "not-allowed" : "pointer",
-              background: "linear-gradient(135deg,var(--blue),var(--blue2))",
+              background: "var(--gradient-primary)",
               color: "white",
               border: "none",
               opacity: lookupLoading ? 0.7 : 1,
@@ -557,7 +557,7 @@ export default function RefundPage() {
 
         {lookupInvoice && (
           <>
-            <div style={{ marginTop: 14, padding: 12, borderRadius: 10, background: "var(--bg)", border: "1px solid var(--bg2)", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+            <div className="responsive-grid" style={{ marginTop: 14, padding: 12, borderRadius: 10, background: "var(--bg)", border: "1px solid var(--bg2)", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
               <div>
                 <div style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>Customer</div>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>{lookupInvoice.customerName}</div>
@@ -592,7 +592,7 @@ export default function RefundPage() {
 
       {lookupInvoice && !lookupInvoice.isRefunded && (
         <div style={card}>
-          <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 240px", gap: 12, marginBottom: 14 }}>
+          <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "180px 1fr 240px", gap: 12, marginBottom: 14 }}>
             <div>
               <label style={labelStyle}>Request Type</label>
               <select style={{ ...inputStyle, cursor: "pointer" }} value={reqType} onChange={(e) => setReqType(e.target.value as RequestType)}>
@@ -681,7 +681,7 @@ export default function RefundPage() {
                             }
                             style={{ ...inputStyle, width: 70, padding: "6px 8px", opacity: row.selected ? 1 : 0.6 }}
                           />
-                          <button
+                          <button data-ui-action="secondary"
                             type="button"
                             onClick={() =>
                               setReturnItems((prev) =>
@@ -791,7 +791,7 @@ export default function RefundPage() {
                             Rs {(row.qty * row.rate).toLocaleString()}
                           </td>
                           <td style={{ padding: "8px 10px" }}>
-                            <button
+                            <button data-ui-action="danger"
                               type="button"
                               onClick={() =>
                                 setReplacementRows((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== idx)))
@@ -807,7 +807,7 @@ export default function RefundPage() {
                   </tbody>
                 </table>
               </div>
-              <button
+              <button data-ui-action="secondary"
                 type="button"
                 onClick={() => setReplacementRows((prev) => [...prev, { stockId: "", variantId: "", qty: 1, rate: 0 }])}
                 style={{ marginTop: 8, padding: "7px 12px", borderRadius: 8, border: "1px solid var(--bg3)", background: "white", color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}
@@ -823,7 +823,7 @@ export default function RefundPage() {
             <div style={{ fontSize: 12, color: "var(--muted)" }}>
               Refund updates stock + customer balance. Replace updates returned stock, issued replacement stock, and only adjusts balance by the net difference.
             </div>
-            <button
+            <button data-ui-action="danger"
               onClick={submitRequest}
               disabled={saving}
               style={{
@@ -833,7 +833,7 @@ export default function RefundPage() {
                 fontWeight: 600,
                 fontFamily: "inherit",
                 cursor: saving ? "not-allowed" : "pointer",
-                background: "linear-gradient(135deg,#b03030,#e05050)",
+                background: "var(--gradient-danger)",
                 color: "white",
                 border: "none",
                 opacity: saving ? 0.7 : 1,
@@ -871,8 +871,8 @@ export default function RefundPage() {
               <tbody>
                 {requests.map((r, i) => (
                   <tr key={r.id} style={{ borderBottom: i < requests.length - 1 ? "1px solid var(--bg2)" : "none" }}>
-                    <td style={{ padding: "9px 12px", fontFamily: "monospace", fontWeight: 700 }}>{r.rrNumber}</td>
-                    <td style={{ padding: "9px 12px", fontFamily: "monospace", fontWeight: 700 }}>{r.invoiceNumber}</td>
+                    <td style={{ padding: "9px 12px", fontFamily: "inherit", fontWeight: 700 }}>{r.rrNumber}</td>
+                    <td style={{ padding: "9px 12px", fontFamily: "inherit", fontWeight: 700 }}>{r.invoiceNumber}</td>
                     <td style={{ padding: "9px 12px", fontSize: 13 }}>{r.customerName}</td>
                     <td style={{ padding: "9px 12px", fontSize: 12, fontWeight: 700, color: r.type === "refund" ? "var(--red)" : "var(--gold)" }}>
                       {r.type === "refund" ? "Refund" : "Replace"}

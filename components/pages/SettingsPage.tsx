@@ -36,7 +36,7 @@ function InfoRow({ icon, label, value, mono }: { icon: string; label: string; va
         <div style={{ fontSize: 10, fontWeight: 600, color: "var(--muted)", letterSpacing: ".4px", textTransform: "uppercase" }}>
           {label}
         </div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginTop: 2, fontFamily: mono ? "monospace" : "inherit" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", marginTop: 2, fontFamily: "inherit" }}>
           {value}
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function SettingsPage() {
         }}>
           <div style={{
             width: 38, height: 38, borderRadius: 10,
-            background: "linear-gradient(135deg, var(--blue), var(--blue2))",
+            background: "var(--gradient-primary)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontSize: 16, flexShrink: 0,
           }}>
@@ -152,7 +152,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <InfoRow icon="fa-box-open"    label="Product Name"    value="TMS by AddsMint" />
           <InfoRow icon="fa-code-branch" label="Version"         value="2.0" mono />
           <InfoRow icon="fa-calendar-check" label="Activation Date" value="25 March 2026" />
@@ -182,7 +182,7 @@ export default function SettingsPage() {
         }}>
           <div style={{
             width: 38, height: 38, borderRadius: 10,
-            background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+            background: "var(--gradient-primary)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontSize: 16, flexShrink: 0,
           }}>
@@ -334,12 +334,12 @@ export default function SettingsPage() {
 
           {/* Submit */}
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button
+            <button data-ui-action="primary"
               type="submit"
               disabled={saving}
               style={{
                 padding: "10px 24px",
-                background: saving ? "var(--bg2)" : "linear-gradient(135deg, var(--blue), var(--blue2))",
+                background: saving ? "var(--bg2)" : "var(--gradient-primary)",
                 color: saving ? "var(--muted)" : "white",
                 border: "none", borderRadius: "var(--r2)",
                 fontSize: 13, fontWeight: 600, fontFamily: "inherit",
